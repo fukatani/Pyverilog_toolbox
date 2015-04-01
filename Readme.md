@@ -1,8 +1,10 @@
 Introduction
 ==============================
 Pyverilog_toolbox is Pyverilog based verification/design tool.
-Including register map analyzer.
-Other feature is intendet to be implemented in the future.
+
+Including only register map analyzer now.
+
+Other feature is intended to be implemented in the future.
 
 
 Software Requirements
@@ -11,10 +13,8 @@ Software Requirements
 * Pyverilog (you can download from https://github.com/shtaxxx/Pyverilog)
 
 
-License
-Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
-
 Installation
+==============================
 
 If you want to use Pyverilog as a general library, you can install on your environment by using setup.py. 
 
@@ -39,10 +39,11 @@ python ra_interface xxxx.v -S config.txt
 xxxx.v is regmap RTL file.
 To analyse register map, config file is needed.
 
+control flag is to be defined in config file.
 testcode/regmap.v is example of register map RTL file,
 and testcode/setup.txt is example of config file.
 
-Analysys result will be output as out.csv.
+Analysis result will be output as out.csv.
 
 ex.
 
@@ -64,7 +65,7 @@ Apache License 2.0
 (http://www.apache.org/licenses/LICENSE-2.0)
 
 
-Copyright and Contact
+Copyright
 ==============================
 
 Copyright (C) 2015, Ryosuke Fukatani
