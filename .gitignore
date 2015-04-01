@@ -1,0 +1,5 @@
+*.pyc
+pyverilog_toolbox/verify_tool/parsetab.py
+*.output
+pyverilog_toolbox/testcode/parsetab.py
+*.out
