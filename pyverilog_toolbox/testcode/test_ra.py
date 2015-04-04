@@ -22,11 +22,13 @@ class TestSequenceFunctions(unittest.TestCase):
         pass
 
     def test_normal(self):
-        write_map, read_map = analize_regmap('regmap.v', 'setup.txt')
+        ranalyzer = RegMapAnalyzer("regmap.v", "setup.txt")
+        write_map, read_map = ranalyzer.getRegMaps()
         self.assertEqual(str(write_map.map), "{0: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1)}, 1: {0: ('TOP.reg1', 0)}}")
         self.assertEqual(str(read_map.map), "{0: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1)}, 1: {0: ('TOP.reg1', 0)}}")
     def test_split(self):
-        write_map, read_map = analize_regmap('regmap_split.v', 'setup.txt')
+        ranalyzer = RegMapAnalyzer("regmap_split.v", "setup.txt")
+        write_map, read_map = ranalyzer.getRegMaps()
         self.assertEqual(str(write_map.map),
                         "{1: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1), 2: ('TOP.reg1', 2), 3: ('TOP.reg1', 3)}}")
         self.assertEqual(str(read_map.map),

@@ -3,3 +3,4 @@ pyverilog_toolbox/verify_tool/parsetab.py
 *.output
 pyverilog_toolbox/testcode/parsetab.py
 *.out
+pyverilog_toolbox/verify_tool/out.csv

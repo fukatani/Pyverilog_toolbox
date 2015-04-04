@@ -22,43 +22,39 @@ import pyverilog.dataflow.replace as replace
 from pyverilog.dataflow.subset import VerilogSubset
 from pyverilog.dataflow.walker import VerilogDataflowWalker
 from pyverilog.dataflow.dataflow import *
-from pyverilog.controlflow.controlflow_analyzer import VerilogControlflowAnalyzer
-from bindlibrary import BindLibrary
+from pyverilog_toolbox.verify_tool.dataflow_facade import *
 
 import pyverilog.controlflow.splitter as splitter
 import pyverilog.controlflow.transition as transition
 
 
-class RegMapAnalyzer(VerilogControlflowAnalyzer):
+class RegMapAnalyzer(dataflow_facade):
 
-    def __init__(self, topmodule, terms, binddict,
-        resolved_terms, resolved_binddict,
-        constlist, fsm_vars=('fsm', 'state', 'count', 'cnt', 'step', 'mode'),
-        out_file = 'out.csv' ):
-
-        VerilogControlflowAnalyzer.__init__(self, topmodule, terms, binddict,
-        resolved_terms, resolved_binddict,
-        constlist, fsm_vars=('fsm', 'state', 'count', 'cnt', 'step', 'mode'))
-
-        self.binds = BindLibrary(binddict, terms)
+    def __init__(self, code_file_name,setup_file,out_file = 'out.csv'):
+        dataflow_facade.__init__(self, code_file_name,setup_file)
         self.out_file_name = out_file
+        self.reg_control = MapFactory(setup_file)
 
-    def getRegMaps(self, reg_control):
-        write_map = reg_control.create_map('write')
-        read_map = reg_control.create_map('read')
+    def getRegMaps(self):
+
+        write_map = self.reg_control.create_map('write')
+        read_map = self.reg_control.create_map('read')
         binds = self.binds
 
         for tv,tk,bvi,bit,term_lsb in binds.walk_reg_each_bit():
             tree = self.makeTree(tk)
             funcdict = splitter.split(tree)
             funcdict = splitter.remove_reset_condition(funcdict)
-            trees = binds.extract_all_dfxxx(tree, set([]), 0, bit-term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
+            trees = binds.extract_all_dfxxx(tree, set([]), term_lsb, bit, pyverilog.dataflow.dataflow.DFTerminal)
             write_map.check_new_reg(str(tv), term_lsb, trees, funcdict)
             read_map.check_new_reg(str(tv), term_lsb, trees, funcdict, bit)
         self.out_file = open(self.out_file_name, "w")
         write_map.output_csv(self.out_file)
         read_map.output_csv(self.out_file)
         self.out_file.close()
+
+        print 'Write_map:\n' + str(write_map.map)
+        print 'Read_map:\n' + str(read_map.map)
         return write_map, read_map
 
 class MapFactory(object):
@@ -134,7 +130,8 @@ class WriteMap(object):
             if max(reg.keys()) > max_bit:
                 max_bit = max(reg.keys())
         self.max_bit = max_bit + 1
-        self.max_address = max(self.map.keys())
+        if self.map:
+            self.max_address = max(self.map.keys())
     def _add_new_reg(self, reg_name, term_lsb, address, bit):
         if address not in self.map.keys():
             self.map[address] = {}
@@ -194,3 +191,7 @@ class ReadMap(WriteMap):
                 sig_name = str(tree[0])
                 if sig_name == str(verb) or (hasattr(verb, 'nextnodes') and sig_name in str(verb.nextnodes)):
                     self._add_new_reg(sig_name, 0, address, bit)
+
+if __name__ == '__main__':
+    ranalyzer = RegMapAnalyzer("../testcode/regmap2.v", "../testcode/setup.txt")
+    ranalyzer.getRegMaps()

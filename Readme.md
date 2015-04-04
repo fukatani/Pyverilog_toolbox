@@ -1,6 +1,6 @@
 Introduction
 ==============================
-Pyverilog_toolbox is Pyverilog based verification/design tool.
+Pyverilog_toolbox is Pyverilog-based verification/design tool.
 
 Including only register map analyzer now.
 

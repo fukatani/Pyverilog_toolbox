@@ -1,9 +1,0 @@
-
-Write Map
-ADD,1,0,
-0,TOP.reg0[1],TOP.reg0[0],
-1,,TOP.reg1[0],
-Read Map
-ADD,1,0,
-0,TOP.reg0[1],TOP.reg0[0],
-1,,TOP.reg1[0],
