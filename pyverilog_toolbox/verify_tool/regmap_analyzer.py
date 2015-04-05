@@ -38,7 +38,7 @@ class RegMapAnalyzer(dataflow_facade):
             funcdict = splitter.split(target_tree)
             funcdict = splitter.remove_reset_condition(funcdict)
             tree_list = binds.extract_all_dfxxx(target_tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
-            write_map.check_new_reg(str(tv), term_lsb, tree_list, funcdict)
+            write_map.check_new_reg(str(tv), term_lsb, tree_list, funcdict, bit)
             read_map.check_new_reg(str(tv), term_lsb, tree_list, funcdict, bit)
         self.out_file = open(self.out_file_name, "w")
         write_map.output_csv(self.out_file)
@@ -124,13 +124,14 @@ class WriteMap(object):
         self.max_bit = max_bit + 1
         if self.map:
             self.max_address = max(self.map.keys())
-    def _add_new_reg(self, reg_name, term_lsb, address, bit):
+
+    def _add_new_reg(self, sig_name, sig_bit, address, map_bit):
         if address not in self.map.keys():
             self.map[address] = {}
-        if bit not in self.map[address]:
-            self.map[address][bit] = (reg_name, term_lsb + bit)
+        if map_bit not in self.map[address]:
+            self.map[address][map_bit] = (sig_name, sig_bit)
         else:
-            assert self.map[address][bit][0] == reg_name, 'duplicated address is exist @ADR:' + str(address)
+            assert self.map[address][map_bit][0] == sig_name, 'duplicated address is exist @ADR:' + str(address)
 
     def get_map_info(self, trees, funcdict):
         for tree in trees:
@@ -156,24 +157,24 @@ class WriteMap(object):
                     assert return_val == key[-1].nextnodes[1].value
         return return_val, map_lsb
 
-    def check_new_reg(self, reg_name, term_lsb, trees, funcdict):
+    def check_new_reg(self, reg_name, term_lsb, trees, funcdict, map_bit):
         sig_names = set([str(tree[0]) for tree in trees])
         if self.finger_print_signals.issubset(sig_names):
             address, bit = self.get_map_info(trees, funcdict)
             if address != -1:
-                self._add_new_reg(reg_name, term_lsb, address, bit)
+                self._add_new_reg(reg_name, map_bit, address, bit)
 
 class ReadMap(WriteMap):
     def __init__(self, flag, address, data):
         WriteMap.__init__(self, flag, address, data)
         self.this_map_name = '\nRead Map\n'
 
-    def check_new_reg(self, reg_name, term_lsb, trees, funcdict, bit):
+    def check_new_reg(self, reg_name, term_lsb, trees, funcdict, map_bit):
         sig_names = set([str(tree[0]) for tree in trees]) | set([reg_name])
         if self.finger_print_signals.issubset(sig_names):
-            self.get_map_info(trees, funcdict, bit)
+            self.get_map_info(trees, funcdict, map_bit)
 
-    def get_map_info(self, trees, funcdict, bit):
+    def get_map_info(self, trees, funcdict, map_bit):
         def is_data_sig(sig_name, verb):
             if isinstance(verb, pyverilog.dataflow.dataflow.DFPartselect):
                 return sig_name == str(verb.var)
@@ -189,9 +190,10 @@ class ReadMap(WriteMap):
                     address = ope.nextnodes[1].value if str(ope.nextnodes[0]) == self.address else ope.nextnodes[0].value
             for tree in trees:
                 sig_name = str(tree[0])
+                sig_bit = tree[1]
                 if is_data_sig(sig_name, verb):
-                    self._add_new_reg(sig_name, 0, address, bit)
+                    self._add_new_reg(sig_name, sig_bit, address, map_bit)
 
 if __name__ == '__main__':
-    ranalyzer = RegMapAnalyzer("../testcode/regmap2.v", "../testcode/setup.txt")
+    ranalyzer = RegMapAnalyzer("../testcode/regmap_split.v", "../testcode/setup.txt")
     ranalyzer.getRegMaps()

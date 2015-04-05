@@ -156,6 +156,8 @@ class BindLibrary(object):
             return tree.width()
         elif isinstance(tree, pyverilog.dataflow.dataflow.DFConcat):
             return sum([self.get_bit_width_from_tree(nextnode) for nextnode in tree.nextnodes])
+        elif isinstance(tree, pyverilog.dataflow.dataflow.DFEvalValue):
+            return tree.width
         else:
             raise IRREGAL_CODE_FORM("unexpected concat node")
 

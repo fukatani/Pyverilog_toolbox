@@ -30,9 +30,9 @@ class TestSequenceFunctions(unittest.TestCase):
         ranalyzer = RegMapAnalyzer("regmap_split.v", "setup.txt")
         write_map, read_map = ranalyzer.getRegMaps()
         self.assertEqual(str(write_map.map),
-                        "{1: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1), 2: ('TOP.reg1', 2), 3: ('TOP.reg1', 3)}}")
+                        "{1: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1), 2: ('TOP.reg1', 0), 3: ('TOP.reg1', 1)}}")
         self.assertEqual(str(read_map.map),
-                        "{1: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1), 2: ('TOP.reg1', 2), 3: ('TOP.reg1', 3)}}")
+                        "{1: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1), 2: ('TOP.reg1', 0), 3: ('TOP.reg1', 1)}}")
     def test_partselect(self):
         df = dataflow_facade("complex_partselect.v", "setup.txt")
         self.assertEqual(df.print_bind_info(),
@@ -44,6 +44,7 @@ class TestSequenceFunctions(unittest.TestCase):
         write_map, read_map = ranalyzer.getRegMaps()
         self.assertEqual(str(write_map.map),
                         "{0: {0: ('TOP.reg0', 3), 1: ('TOP.reg0', 4)}}")
-
+        self.assertEqual(str(read_map.map),
+                        "{0: {0: ('TOP.reg0', 3), 1: ('TOP.reg0', 4)}}")
 if __name__ == '__main__':
     unittest.main()
