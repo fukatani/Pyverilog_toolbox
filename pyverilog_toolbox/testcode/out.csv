@@ -1,7 +1,6 @@
 
 Write Map
-ADD,3,2,1,0,
-1,TOP.reg1[3],TOP.reg1[2],TOP.reg0[1],TOP.reg0[0],
+ADD,1,0,
+0,TOP.reg0[4],TOP.reg0[3],
 Read Map
-ADD,3,2,1,0,
-1,TOP.reg1[3],TOP.reg1[2],TOP.reg0[1],TOP.reg0[0],
+ADD,0,
