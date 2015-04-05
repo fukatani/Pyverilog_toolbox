@@ -32,7 +32,7 @@ Usage
 After install, you can use regmap analyzer by this command.
 
 ```
-python ra_interface xxxx.v -S config.txt
+python regmap_analyzer.py xxxx.v -S config.txt
 ```
 
 
