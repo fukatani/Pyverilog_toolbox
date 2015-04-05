@@ -45,7 +45,7 @@ class RegMapAnalyzer(dataflow_facade):
             tree = self.makeTree(tk)
             funcdict = splitter.split(tree)
             funcdict = splitter.remove_reset_condition(funcdict)
-            trees = binds.extract_all_dfxxx(tree, set([]), term_lsb, bit, pyverilog.dataflow.dataflow.DFTerminal)
+            trees = binds.extract_all_dfxxx(tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
             write_map.check_new_reg(str(tv), term_lsb, trees, funcdict)
             read_map.check_new_reg(str(tv), term_lsb, trees, funcdict, bit)
         self.out_file = open(self.out_file_name, "w")

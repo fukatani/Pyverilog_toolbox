@@ -34,13 +34,13 @@ class BindLibrary(object):
         self.scope_dict = make_scope_dict(terms)
 
     def dfx_memoize(f):
-        def helper(self, target_tree, tree_list, term_lsb, bit, dftype):
+        def helper(self, target_tree, tree_list, bit, dftype):
             if dftype == pyverilog.dataflow.dataflow.DFTerminal:
                 if (target_tree,term_lsb,bit) not in cache:
-                    cache[(target_tree,term_lsb,bit)] = f(self, target_tree, set([]), term_lsb, bit, dftype)
-                return tree_list.union(cache[(target_tree,term_lsb,bit)])
+                    cache[(target_tree,term_lsb,bit)] = f(self, target_tree, set([]), bit, dftype)
+                return tree_list.union(cache[(target_tree,bit)])
             else:
-                return f(self, target_tree, tree_list,term_lsb,bit,dftype)
+                return f(self, target_tree, tree_list,bit,dftype)
         return helper
 
     #@dfx_memoize
@@ -57,21 +57,21 @@ class BindLibrary(object):
             if target_scope in self._binddict.keys():
                 target_bind, target_term_lsb = self.get_next_bind(target_scope, bit)
                 if not target_bind.isCombination():
-                    tree_list.add((target_tree, bit))
+                    tree_list.add((target_tree, bit + target_term_lsb))
             else:#TOP Input port
-                tree_list.add((target_tree, bit))
+                tree_list.add((target_tree, bit))#TODO
         else:
             if isinstance(target_tree, dftype):
                 tree_list.add((target_tree, bit))
 
         if hasattr(target_tree, "nextnodes"):
             if isinstance(target_tree, pyverilog.dataflow.dataflow.DFConcat):
-                now_max_bit = term_lsb
-                now_min_bit = term_lsb
+                now_max_bit = 0
+                now_min_bit = 0
                 for nextnode in reversed(target_tree.nextnodes):
                     now_max_bit = now_min_bit + self.get_bit_width_from_tree(nextnode) - 1
                     if now_min_bit <= bit <= now_max_bit:
-                        tree_list = self.extract_all_dfxxx(nextnode, tree_list, 0, bit - now_min_bit, dftype)
+                        tree_list = self.extract_all_dfxxx(nextnode, tree_list, bit - now_min_bit, dftype)
                         break
                     now_min_bit = now_max_bit + 1
             else:
