@@ -6,7 +6,6 @@ module TOP(CLK, RST, WRITE, READ, ADDR, WRITE_DATA, READ_DATA);
   reg [4:3] reg0;
 
 
-
   always @(posedge CLK) begin
     if(RST) begin
       reg0[4:3] <= 0;

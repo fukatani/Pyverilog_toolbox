@@ -3,7 +3,7 @@
 #
 #
 #
-# Copyright (C) 2015, ryosuke fukatani
+# Copyright (C) 2015, Ryosuke Fukatani
 # License: Apache 2.0
 #-------------------------------------------------------------------------------
 

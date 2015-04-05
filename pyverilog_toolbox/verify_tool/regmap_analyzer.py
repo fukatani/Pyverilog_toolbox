@@ -14,18 +14,10 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
 import pyverilog.utils.version
-import pyverilog.utils.util as util
-import pyverilog.utils.signaltype as signaltype
-import pyverilog.utils.inference as inference
-import pyverilog.dataflow.reorder as reorder
-import pyverilog.dataflow.replace as replace
-from pyverilog.dataflow.subset import VerilogSubset
-from pyverilog.dataflow.walker import VerilogDataflowWalker
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
 
 import pyverilog.controlflow.splitter as splitter
-import pyverilog.controlflow.transition as transition
 
 
 class RegMapAnalyzer(dataflow_facade):
@@ -42,12 +34,12 @@ class RegMapAnalyzer(dataflow_facade):
         binds = self.binds
 
         for tv,tk,bvi,bit,term_lsb in binds.walk_reg_each_bit():
-            tree = self.makeTree(tk)
-            funcdict = splitter.split(tree)
+            target_tree = self.makeTree(tk)
+            funcdict = splitter.split(target_tree)
             funcdict = splitter.remove_reset_condition(funcdict)
-            trees = binds.extract_all_dfxxx(tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
-            write_map.check_new_reg(str(tv), term_lsb, trees, funcdict)
-            read_map.check_new_reg(str(tv), term_lsb, trees, funcdict, bit)
+            tree_list = binds.extract_all_dfxxx(target_tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
+            write_map.check_new_reg(str(tv), term_lsb, tree_list, funcdict)
+            read_map.check_new_reg(str(tv), term_lsb, tree_list, funcdict, bit)
         self.out_file = open(self.out_file_name, "w")
         write_map.output_csv(self.out_file)
         read_map.output_csv(self.out_file)
