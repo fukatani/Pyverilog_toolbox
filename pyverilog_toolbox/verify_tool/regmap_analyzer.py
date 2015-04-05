@@ -174,6 +174,14 @@ class ReadMap(WriteMap):
             self.get_map_info(trees, funcdict, bit)
 
     def get_map_info(self, trees, funcdict, bit):
+        def is_data_sig(sig_name, verb):
+            if isinstance(verb, pyverilog.dataflow.dataflow.DFPartselect):
+                return sig_name == str(verb.var)
+            elif hasattr(verb, 'nextnodes'):
+                return sig_name in str(verb.nextnodes)
+            else:
+                return sig_name == str(verb)
+
         for key, verb in funcdict.items():
             for ope in key:
                 nextnodes_str = [str(nextnode) for nextnode in ope.nextnodes]
@@ -181,7 +189,7 @@ class ReadMap(WriteMap):
                     address = ope.nextnodes[1].value if str(ope.nextnodes[0]) == self.address else ope.nextnodes[0].value
             for tree in trees:
                 sig_name = str(tree[0])
-                if sig_name == str(verb) or (hasattr(verb, 'nextnodes') and sig_name in str(verb.nextnodes)):
+                if is_data_sig(sig_name, verb):
                     self._add_new_reg(sig_name, 0, address, bit)
 
 if __name__ == '__main__':

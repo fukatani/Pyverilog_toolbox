@@ -83,6 +83,6 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         return return_str
 
 if __name__ == '__main__':
-    df = dataflow_facade("../testcode/complex_partselect.v", "../testcode/setup.txt")
-    #df = dataflow_facade("../testcode/regmap2.v", "../testcode/setup.txt")
+    #df = dataflow_facade("../testcode/complex_partselect.v", "../testcode/setup.txt")
+    df = dataflow_facade("../testcode/regmap2.v", "../testcode/setup.txt")
     df.print_bind_info()
