@@ -44,26 +44,25 @@ class BindLibrary(object):
         return helper
 
     #@dfx_memoize
-    def extract_all_dfxxx(self, target_tree, tree_list, term_lsb, bit, dftype):
+    def extract_all_dfxxx(self, target_tree, tree_list, bit, dftype):
         """[FUNCTIONS]
         return set of DFXXX
         target_tree:DF***
         tree_list:{(type, DF***, bit),(type, DF***, bit),...}
-        term_lsb:integar
         bit: signal bit pointer
         dftype: DFOperator or DFIntConst or ,...
         """
         if dftype == pyverilog.dataflow.dataflow.DFTerminal and isinstance(target_tree, pyverilog.dataflow.dataflow.DFTerminal):
             target_scope = self.get_scope(target_tree)
             if target_scope in self._binddict.keys():
-                target_bind, target_term_lsb = self.get_next_bind(target_scope, bit - term_lsb)
+                target_bind, target_term_lsb = self.get_next_bind(target_scope, bit)
                 if not target_bind.isCombination():
-                    tree_list.add((target_tree, bit - term_lsb))
+                    tree_list.add((target_tree, bit))
             else:#TOP Input port
-                tree_list.add((target_tree, bit - term_lsb))
+                tree_list.add((target_tree, bit))
         else:
             if isinstance(target_tree, dftype):
-                tree_list.add((target_tree, bit - term_lsb))
+                tree_list.add((target_tree, bit))
 
         if hasattr(target_tree, "nextnodes"):
             if isinstance(target_tree, pyverilog.dataflow.dataflow.DFConcat):
@@ -78,24 +77,25 @@ class BindLibrary(object):
             else:
                 for nextnode in target_tree.nextnodes:
                     if isinstance(target_tree, pyverilog.dataflow.dataflow.DFBranch) and nextnode == target_tree.condnode:
-                        tree_list = self.extract_all_dfxxx(nextnode,tree_list, term_lsb, 0, dftype)
+                        tree_list = self.extract_all_dfxxx(nextnode,tree_list, 0, dftype)
                     else:
-                        tree_list = self.extract_all_dfxxx(nextnode,tree_list, term_lsb, bit, dftype)
+                        tree_list = self.extract_all_dfxxx(nextnode,tree_list, bit, dftype)
         elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFBranch):
-            tree_list = self.extract_all_dfxxx(target_tree.condnode,tree_list, term_lsb, 0, dftype)
-            tree_list = self.extract_all_dfxxx(target_tree.truenode,tree_list, term_lsb, bit, dftype)
-            tree_list = self.extract_all_dfxxx(target_tree.falsenode,tree_list, term_lsb, bit, dftype)
+            tree_list = self.extract_all_dfxxx(target_tree.condnode, tree_list, 0, dftype)
+            tree_list = self.extract_all_dfxxx(target_tree.truenode, tree_list, bit, dftype)
+            tree_list = self.extract_all_dfxxx(target_tree.falsenode, tree_list, bit, dftype)
         elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFTerminal):
             target_scope = self.get_scope(target_tree)
             if target_scope in self._binddict.keys():
-                target_bind, target_term_lsb = self.get_next_bind(target_scope, bit - term_lsb)
+                target_bind, target_term_lsb = self.get_next_bind(target_scope, bit)
                 if target_bind.isCombination():
-                    tree_list = self.extract_all_dfxxx(target_bind.tree, tree_list, target_term_lsb, bit, dftype)
+                    tree_list = self.extract_all_dfxxx(target_bind.tree, tree_list, bit, dftype)
         elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFPartselect):
             var_node = target_tree.var
-            ref_bit = self.eval_value(target_tree.lsb) + bit - term_lsb
-            tree_list = self.extract_all_dfxxx(var_node,tree_list, term_lsb, ref_bit, dftype)
+            ref_bit = self.eval_value(target_tree.lsb) + bit
+            tree_list = self.extract_all_dfxxx(var_node, tree_list, ref_bit, dftype)
         return tree_list
+
 
     def delete_cache(self):
         global cache
@@ -114,10 +114,10 @@ class BindLibrary(object):
         """
         if scope in self._binddict.keys():
             target_binds = self._binddict[scope]
-            #target_bind_index = self.get_bind_index(target_binds, bit + self.eval_value(self._terms[scope].lsb), self._terms[scope])
-            target_bind_index = self.get_bind_index(target_binds, bit, self._terms[scope])
+            target_bind_index = self.get_bind_index(target_binds, bit + self.eval_value(self._terms[scope].lsb), self._terms[scope])
+            #target_bind_index = self.get_bind_index(target_binds, bit, self._terms[scope])
             target_bind = target_binds[target_bind_index]
-            return target_bind, self.get_bind_lsb(target_bind)
+            return target_bind, self.eval_value(self._terms[scope].lsb)
         else:
             return None, self._terms[scope].lsb
 

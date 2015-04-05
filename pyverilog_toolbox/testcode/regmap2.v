@@ -14,7 +14,6 @@ module TOP(CLK, RST, WRITE, READ, ADDR, WRITE_DATA, READ_DATA);
       case(ADDR)
         0:reg0[4:3] <= WRITE_DATA[1:0];
       endcase
-      //reg0[4:3] <= WRITE_DATA[1:0];
     end
   end
 

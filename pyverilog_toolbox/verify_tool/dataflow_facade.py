@@ -73,12 +73,16 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         return options.topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist
 
     def print_bind_info(self):
+        return_str = ''
         binds = BindLibrary(self.resolved_binddict, self.resolved_terms)
         for tv,tk,bvi,bit,term_lsb in binds.walk_reg_each_bit():
             tree = self.makeTree(tk)
-            trees = binds.extract_all_dfxxx(tree, set([]), term_lsb, bit, pyverilog.dataflow.dataflow.DFTerminal)
-            print str(tk) + '[' + str(bit) + ']' + str(trees)
+            trees = binds.extract_all_dfxxx(tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
+            print str(tk) + '[' + str(bit) + ']: ' + str(trees)
+            return_str += str(tk) + '[' + str(bit) + ']: ' + str(trees)
+        return return_str
 
 if __name__ == '__main__':
-    df = dataflow_facade("../testcode/regmap2.v", "../testcode/setup.txt")
+    df = dataflow_facade("../testcode/complex_partselect.v", "../testcode/setup.txt")
+    #df = dataflow_facade("../testcode/complex_partselect2.v", "../testcode/setup.txt")
     df.print_bind_info()
