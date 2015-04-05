@@ -59,7 +59,7 @@ class BindLibrary(object):
                 if not target_bind.isCombination():
                     tree_list.add((target_tree, bit + target_term_lsb))
             else:#TOP Input port
-                tree_list.add((target_tree, bit))#TODO
+                tree_list.add((target_tree, bit + self.eval_value(self._terms[self.scope_dict[str(target_tree)]].lsb)))
         else:
             if isinstance(target_tree, dftype):
                 tree_list.add((target_tree, bit))
@@ -91,9 +91,9 @@ class BindLibrary(object):
                 if target_bind.isCombination():
                     tree_list = self.extract_all_dfxxx(target_bind.tree, tree_list, bit, dftype)
         elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFPartselect):
-            var_node = target_tree.var
-            ref_bit = self.eval_value(target_tree.lsb) + bit
-            tree_list = self.extract_all_dfxxx(var_node, tree_list, ref_bit, dftype)
+            #ref_bit = self.eval_value(target_tree.lsb) + bit
+            ref_bit = self.eval_value(target_tree.lsb) + bit - self.eval_value(self._terms[self.scope_dict[str(target_tree.var)]].lsb)
+            tree_list = self.extract_all_dfxxx(target_tree.var, tree_list, ref_bit, dftype)
         return tree_list
 
 
