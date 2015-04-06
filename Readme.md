@@ -30,7 +30,8 @@ Usage
 
 ## regmap_analyzer
 
-After install, you can use regmap analyzer by this command.
+regmap_analyzer can analyze register map structure from RTL.
+After install Pyverilog_toolbox, you can use regmap analyzer by this command.
 
 ```
 python regmap_analyzer.py xxxx.v -S config.txt
@@ -85,6 +86,11 @@ ADD	1	0
 
 
 ## combloop_finder
+
+Combinational loop is sticky problem, but you can find it by combloop_finder easily.
+
+
+
 ```
 python regmap_combloop_finder.py xxxx.v
 ```
