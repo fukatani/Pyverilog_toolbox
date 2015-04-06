@@ -28,7 +28,7 @@ Python 3.x is not tried by author.
 Usage
 ==============================
 
-ÅEregmap_analyzer
+## regmap_analyzer
 
 After install, you can use regmap analyzer by this command.
 
@@ -70,7 +70,8 @@ Input verilog file:
   end
 ```
 
-Output
+Output:
+
 ```
 Write Map		
 ADD	1	0
@@ -83,7 +84,7 @@ ADD	1	0
 ```
 
 
-ÅEcombloop_finder
+## combloop_finder
 ```
 python regmap_combloop_finder.py xxxx.v
 ```
