@@ -32,5 +32,6 @@ class CombLoopFinder(dataflow_facade):
         return
 
 if __name__ == '__main__':
-    c_finder = CombLoopFinder("../testcode/combloop1.v")
+    c_finder = CombLoopFinder("../testcode/not_combloop.v")
     c_finder.search_combloop()
+    print 'There is no combinational loop.'

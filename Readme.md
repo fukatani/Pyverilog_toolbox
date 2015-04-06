@@ -2,9 +2,7 @@ Introduction
 ==============================
 Pyverilog_toolbox is Pyverilog-based verification/design tool.
 
-Including only register map analyzer now.
-
-Other feature is intended to be implemented in the future.
+Accerating your digital circuit design verification.
 
 
 Software Requirements
@@ -29,6 +27,9 @@ Python 3.x is not tried by author.
 
 Usage
 ==============================
+
+ÅEregmap_analyzer
+
 After install, you can use regmap analyzer by this command.
 
 ```
@@ -79,6 +80,34 @@ Read Map
 ADD	1	0
 0	TOP.reg0[1]	TOP.reg0[0]
 1		TOP.reg1[0]
+```
+
+
+ÅEcombloop_finder
+```
+python regmap_combloop_finder.py xxxx.v
+```
+
+if there is a combinational loop in your design, combloop_finder raise error and specify loop occurrence place.
+
+ex.
+
+```
+module TOP(CLK, RST);
+  input CLK,RST;
+  wire wire1,wire2,wire3;
+
+  assign wire1 = wire2;
+  assign wire2 = !wire3;
+  assign wire3 = wire1;
+
+endmodule
+```
+
+
+Output:
+```
+CombLoopException: Combinational loop is found @TOP.wire3
 ```
 
 License
