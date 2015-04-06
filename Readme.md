@@ -87,7 +87,7 @@ ADD	1	0
 
 ## combloop_finder
 
-Combinational loop is sticky problem, but you can find it by combloop_finder easily.
+Combinational logic loop is sticky problem, but you can find it by combloop_finder easily.
 
 
 

@@ -28,10 +28,10 @@ class CombLoopFinder(dataflow_facade):
         for tv,tk,bvi,bit,term_lsb in binds.walk_reg_each_bit():
             if 'Reg' in tv.termtype and not bvi.isCombination(): continue
             target_tree = self.makeTree(tk)
-            binds.search_combloop(target_tree, bit - term_lsb, str(tk))
+            binds.search_combloop(target_tree, bit - term_lsb, str(tk), bit - term_lsb)
         return
 
 if __name__ == '__main__':
-    c_finder = CombLoopFinder("../testcode/not_combloop.v")
+    c_finder = CombLoopFinder("../testcode/combloop.v")
     c_finder.search_combloop()
     print 'There is no combinational loop.'
