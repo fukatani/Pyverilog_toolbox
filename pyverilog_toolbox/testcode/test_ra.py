@@ -15,6 +15,8 @@ import subprocess
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
 from pyverilog_toolbox.verify_tool.regmap_analyzer import *
+from pyverilog_toolbox.verify_tool.combloop_finder import *
+from pyverilog_toolbox.verify_tool.bindlibrary import *
 import unittest
 
 class TestSequenceFunctions(unittest.TestCase):
@@ -46,5 +48,23 @@ class TestSequenceFunctions(unittest.TestCase):
                         "{0: {0: ('TOP.reg0', 3), 1: ('TOP.reg0', 4)}}")
         self.assertEqual(str(read_map.map),
                         "{0: {0: ('TOP.reg0', 3), 1: ('TOP.reg0', 4)}}")
+
+    def test_comb_loop(self):
+        c_finder = CombLoopFinder("combloop.v")
+        with self.assertRaises(CombLoopException):
+            c_finder.search_combloop()
+        c_finder = CombLoopFinder("not_combloop.v")
+        c_finder.search_combloop()
+
+    def test_comb_loop1(self):
+        c_finder = CombLoopFinder("combloop1.v")
+        with self.assertRaises(CombLoopException):
+            c_finder.search_combloop()
+
+    def test_comb_loop2(self):
+        c_finder = CombLoopFinder("combloop2.v")
+        with self.assertRaises(CombLoopException):
+            c_finder.search_combloop()
+
 if __name__ == '__main__':
     unittest.main()

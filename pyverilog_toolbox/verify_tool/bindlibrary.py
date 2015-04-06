@@ -97,6 +97,49 @@ class BindLibrary(object):
         return tree_list
 
 
+    def search_combloop(self, target_tree, bit, start_tree, find_cnt=0):
+        """[FUNCTIONS]
+        target_tree:DF***
+        bit: signal bit pointer
+        start_tree:DF***
+        """
+        if str(target_tree) == start_tree:
+            find_cnt += 1
+        if find_cnt == 2:
+            raise CombLoopException('Combinational loop is found @' + str(start_tree))
+
+        if hasattr(target_tree, "nextnodes"):
+            if isinstance(target_tree, pyverilog.dataflow.dataflow.DFConcat):
+                now_max_bit = 0
+                now_min_bit = 0
+                for nextnode in reversed(target_tree.nextnodes):
+                    now_max_bit = now_min_bit + self.get_bit_width_from_tree(nextnode) - 1
+                    if now_min_bit <= bit <= now_max_bit:
+                        self.search_combloop(nextnode, bit - now_min_bit, start_tree, find_cnt)
+                        break
+                    now_min_bit = now_max_bit + 1
+            else:
+                for nextnode in target_tree.nextnodes:
+                    if isinstance(target_tree, pyverilog.dataflow.dataflow.DFBranch) and nextnode == target_tree.condnode:
+                        self.search_combloop(nextnode, 0, start_tree, find_cnt)
+                    else:
+                        self.search_combloop(nextnode, bit, start_tree, find_cnt)
+        elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFBranch):
+            self.search_combloop(target_tree.condnode, 0, start_tree, find_cnt)
+            self.search_combloop(target_tree.truenode, bit, start_tree, find_cnt)
+            self.search_combloop(target_tree.falsenode, bit, start_tree, find_cnt)
+        elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFTerminal):
+            target_scope = self.get_scope(target_tree)
+            if target_scope in self._binddict.keys():
+                target_bind, target_term_lsb = self.get_next_bind(target_scope, bit)
+                if target_bind.isCombination():
+                    self.search_combloop(target_bind.tree, bit, start_tree, find_cnt)
+        elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFPartselect):
+            ref_bit = self.eval_value(target_tree.lsb) + bit - self.eval_value(self._terms[self.scope_dict[str(target_tree.var)]].lsb)
+            self.search_combloop(target_tree.var, ref_bit, start_tree, find_cnt)
+        return
+
+
     def delete_cache(self):
         global cache
         cache = {}
@@ -214,3 +257,5 @@ class BindLibrary(object):
         else:
             return None
 
+
+class CombLoopException(Exception): pass
