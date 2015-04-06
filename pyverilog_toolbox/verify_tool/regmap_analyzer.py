@@ -23,7 +23,7 @@ import pyverilog.controlflow.splitter as splitter
 class RegMapAnalyzer(dataflow_facade):
 
     def __init__(self, code_file_name,setup_file,out_file = 'out.csv'):
-        dataflow_facade.__init__(self, code_file_name,setup_file)
+        dataflow_facade.__init__(self, code_file_name)
         self.out_file_name = out_file
         self.reg_control = MapFactory(setup_file)
 

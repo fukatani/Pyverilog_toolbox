@@ -34,7 +34,7 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertEqual(str(read_map.map),
                         "{1: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1), 2: ('TOP.reg1', 0), 3: ('TOP.reg1', 1)}}")
     def test_partselect(self):
-        df = dataflow_facade("complex_partselect.v", "setup.txt")
+        df = dataflow_facade("complex_partselect.v")
         self.assertEqual(df.print_bind_info(),
                         'TOP.reg0[3]: set([(TOP.reg0, 3), (TOP.WRITE, 0), (TOP.WRITE_DATA, 1)])' +
                         'TOP.reg0[4]: set([(TOP.reg0, 4), (TOP.WRITE_DATA, 2), (TOP.WRITE, 0)])')

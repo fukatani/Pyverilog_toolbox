@@ -24,13 +24,13 @@ from bindlibrary import BindLibrary
 from pyverilog.controlflow.controlflow_analyzer import VerilogControlflowAnalyzer
 
 class dataflow_facade(VerilogControlflowAnalyzer):
-    def __init__(self, code_file_name,setup_file):
-        topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist = self.get_dataflow(code_file_name,setup_file)
+    def __init__(self, code_file_name):
+        topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist = self.get_dataflow(code_file_name)
         VerilogControlflowAnalyzer.__init__(self, topmodule, terms, binddict,
         resolved_terms, resolved_binddict,constlist)
         self.binds = BindLibrary(binddict, terms)
 
-    def get_dataflow(self, code_file_name,setup_file):
+    def get_dataflow(self, code_file_name):
         optparser = OptionParser()
         optparser.add_option("-t","--top",dest="topmodule",
                              default="TOP",help="Top module, Default=TOP")
@@ -48,9 +48,6 @@ class dataflow_facade(VerilogControlflowAnalyzer):
             filelist = args
         else:
             filelist = {code_file_name}
-
-        if options.regmap_config:
-            self.setup_file = options.regmap_config
 
         for f in filelist:
             if not os.path.exists(f): raise IOError("file not found: " + f)
