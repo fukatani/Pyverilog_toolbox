@@ -36,14 +36,14 @@ class BindLibrary(object):
     def dfx_memoize(f):
         def helper(self, target_tree, tree_list, bit, dftype):
             if dftype == pyverilog.dataflow.dataflow.DFTerminal:
-                if (target_tree,term_lsb,bit) not in cache:
-                    cache[(target_tree,term_lsb,bit)] = f(self, target_tree, set([]), bit, dftype)
+                if (target_tree,bit) not in cache:
+                    cache[(target_tree,bit)] = f(self, target_tree, set([]), bit, dftype)
                 return tree_list.union(cache[(target_tree,bit)])
             else:
                 return f(self, target_tree, tree_list,bit,dftype)
         return helper
 
-    #@dfx_memoize
+    @dfx_memoize
     def extract_all_dfxxx(self, target_tree, tree_list, bit, dftype):
         """[FUNCTIONS]
         return set of DFXXX
@@ -256,6 +256,5 @@ class BindLibrary(object):
             return self.scope_dict[name]
         else:
             return None
-
 
 class CombLoopException(Exception): pass
