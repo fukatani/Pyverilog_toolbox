@@ -24,6 +24,11 @@ from bindlibrary import BindLibrary
 from pyverilog.controlflow.controlflow_analyzer import VerilogControlflowAnalyzer
 
 class dataflow_facade(VerilogControlflowAnalyzer):
+    """ [CLASSES]
+        Facade pattern for getting dataflow.
+        You can get dataflow by dataflow_facade(Verilog file name).
+        If commandline option exists, first argument is regard as verilog file name.
+    """
     def __init__(self, code_file_name):
         topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist = self.get_dataflow(code_file_name)
         VerilogControlflowAnalyzer.__init__(self, topmodule, terms, binddict,
@@ -80,6 +85,6 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         return return_str
 
 if __name__ == '__main__':
-    #df = dataflow_facade("../testcode/complex_partselect.v", "../testcode/setup.txt")
-    df = dataflow_facade("../testcode/regmap2.v", "../testcode/setup.txt")
+    #df = dataflow_facade("../testcode/complex_partselect.v")
+    df = dataflow_facade("../testcode/regmap2.v")
     df.print_bind_info()

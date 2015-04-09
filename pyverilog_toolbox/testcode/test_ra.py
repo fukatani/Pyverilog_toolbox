@@ -17,12 +17,22 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 from pyverilog_toolbox.verify_tool.regmap_analyzer import *
 from pyverilog_toolbox.verify_tool.combloop_finder import *
 from pyverilog_toolbox.verify_tool.bindlibrary import *
+from pyverilog_toolbox.verify_tool.cnt_analyzer import *
 import unittest
 
 class TestSequenceFunctions(unittest.TestCase):
     def setUp(self):
         pass
 
+    def test_cnt_analyzer(self):
+        c_analyzer = CntAnalyzer("norm_cnt2.v")
+        cnt_dict = c_analyzer.analyze_cnt()
+        self.assertEqual(cnt_dict['TOP.down_cnt'].tostr(),
+                        "category: down counter\nreset val: 0\nmax_val: 4\nminus cond:('NotEq', 0)")
+        self.assertEqual(cnt_dict['TOP.up_cnt'].tostr(),
+                        'category: up counter\nreset val: 0\nmax_val: 6\nplus cond:set([TOP.UP_ENABLE2, TOP.UP_ENABLE])')
+        self.assertEqual(cnt_dict['TOP.up_cnt2'].tostr(),
+                        'category: up counter\nreset val: 0\nmax_val: 4\nplus cond:set([NotEq])')
     def test_normal(self):
         ranalyzer = RegMapAnalyzer("regmap.v", "setup.txt")
         write_map, read_map = ranalyzer.getRegMaps()
@@ -65,6 +75,7 @@ class TestSequenceFunctions(unittest.TestCase):
         c_finder = CombLoopFinder("combloop2.v")
         with self.assertRaises(CombLoopException):
             c_finder.search_combloop()
+
 
 if __name__ == '__main__':
     unittest.main()

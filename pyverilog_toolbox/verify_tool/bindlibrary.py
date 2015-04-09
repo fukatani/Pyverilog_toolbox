@@ -17,7 +17,7 @@ import pyverilog.utils.version
 import pyverilog.utils.util as util
 from pyverilog.dataflow.dataflow import *
 
-cache = {}
+
 class BindLibrary(object):
     def __init__(self, binddict, terms):
         def make_scope_dict(terms):
@@ -32,13 +32,14 @@ class BindLibrary(object):
         self._binddict = binddict
         self._terms = terms
         self.scope_dict = make_scope_dict(terms)
+        self.cache = {}
 
     def dfx_memoize(f):
         def helper(self, target_tree, tree_list, bit, dftype):
             if dftype == pyverilog.dataflow.dataflow.DFTerminal:
-                if (target_tree,bit) not in cache:
-                    cache[(target_tree,bit)] = f(self, target_tree, set([]), bit, dftype)
-                return tree_list.union(cache[(target_tree,bit)])
+                if (target_tree,bit) not in self.cache:
+                    self.cache[(target_tree,bit)] = f(self, target_tree, set([]), bit, dftype)
+                return tree_list.union(self.cache[(target_tree,bit)])
             else:
                 return f(self, target_tree, tree_list,bit,dftype)
         return helper
