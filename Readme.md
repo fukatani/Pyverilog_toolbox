@@ -4,6 +4,8 @@ Pyverilog_toolbox is Pyverilog-based verification/design tool.
 
 Accerating your digital circuit design verification.
 
+Thanks to Pyverilog developer shtaxxx.
+
 
 Software Requirements
 ==============================
@@ -228,3 +230,9 @@ Copyright
 ==============================
 
 Copyright (C) 2015, Ryosuke Fukatani
+
+Related Project
+==============================
+
+Pyverilog
+https://github.com/shtaxxx/Pyverilog
