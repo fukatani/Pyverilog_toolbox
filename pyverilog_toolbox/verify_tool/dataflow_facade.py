@@ -74,6 +74,17 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         constlist = optimizer.getConstlist()
         return options.topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist
 
+    def make_term_ref_dict(self):
+        self.term_ref_dict ={}
+        for tv,tk,bvi,bit,term_lsb in self.binds.walk_reg_each_bit():
+            if 'Rename' in tv.termtype: continue
+            target_tree = self.makeTree(tk)
+            tree_list = self.binds.extract_all_dfxxx(target_tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
+            for tree, bit in tree_list:
+                if str(tree) not in self.term_ref_dict.keys():
+                    self.term_ref_dict[str(tree)] = set([])
+                self.term_ref_dict[str(tree)].add(str(tk))
+
     def print_bind_info(self):
         return_str = ''
         binds = BindLibrary(self.resolved_binddict, self.resolved_terms)

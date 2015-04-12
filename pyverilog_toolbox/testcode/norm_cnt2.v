@@ -26,7 +26,7 @@ module TOP(CLK, RSTN, UP_ENABLE, UP_ENABLE2, CLEAR);
   always @(posedge CLK or negedge RSTN) begin
     if(!RSTN) begin
       up_cnt2 <= 0;
-    end else if(up_cnt2 != 3'd5) begin
+    end else if(up_cnt2 != 3'd5 && up_cnt == 3'd5) begin
       up_cnt2 <= up_cnt2 + 3'd1;
     end else begin
       up_cnt2 <= 0;
@@ -44,7 +44,16 @@ module TOP(CLK, RSTN, UP_ENABLE, UP_ENABLE2, CLEAR);
     end
   end
 
-
+  reg now;
+  always @(posedge CLK or negedge RSTN) begin
+    if(!RSTN) begin
+      now <= 0;
+    end else if(up_cnt == 3'd4) begin
+      now <= 0;
+    end else if(up_cnt == 3'd2) begin
+      now <= 1;
+    end
+  end
 
 endmodule
 

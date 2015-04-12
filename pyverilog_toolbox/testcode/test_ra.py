@@ -28,11 +28,18 @@ class TestSequenceFunctions(unittest.TestCase):
         c_analyzer = CntAnalyzer("norm_cnt2.v")
         cnt_dict = c_analyzer.analyze_cnt()
         self.assertEqual(cnt_dict['TOP.down_cnt'].tostr(),
-                        "category: down counter\nreset val: 0\nmax_val: 4\nminus cond:('NotEq', 0)")
+                        "name: TOP.down_cnt\ncategory: down counter\nreset val: 0" +
+                        "\nmax_val: 4\nmother counter:set([])")
         self.assertEqual(cnt_dict['TOP.up_cnt'].tostr(),
-                        'category: up counter\nreset val: 0\nmax_val: 6\nplus cond:set([TOP.UP_ENABLE2, TOP.UP_ENABLE])')
+                        'name: TOP.up_cnt\ncategory: up counter\nreset val: 0' +
+                        '\nmax_val: 6\nmother counter:set([])')
         self.assertEqual(cnt_dict['TOP.up_cnt2'].tostr(),
-                        'category: up counter\nreset val: 0\nmax_val: 4\nplus cond:set([NotEq])')
+                        "name: TOP.up_cnt2\ncategory: up counter\nreset val: 0" +
+                        "\nmax_val: 4\nmother counter:set(['TOP.up_cnt'])")
+        c_analyzer.make_cnt_event_all()
+        self.assertEqual(str(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict),
+                        '{2: ["TOP.now=\'d1 @(TOP_up_cnt==3\'d2)", "TOP.is_count_max=\'d1 @(TOP_up_cnt==3\'d2)", "TOP.up_cnt2=\'d0 @(TOP_up_cnt==3\'d2)"]}')
+
     def test_normal(self):
         ranalyzer = RegMapAnalyzer("regmap.v", "setup.txt")
         write_map, read_map = ranalyzer.getRegMaps()

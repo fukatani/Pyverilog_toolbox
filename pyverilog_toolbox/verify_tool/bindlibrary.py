@@ -16,9 +16,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 import pyverilog.utils.version
 import pyverilog.utils.util as util
 from pyverilog.dataflow.dataflow import *
-
+from types import MethodType
 
 class BindLibrary(object):
+    """ [CLASSES]
+        Library for using dataflow information.
+    """
+
     def __init__(self, binddict, terms):
         def make_scope_dict(terms):
             """ [FUNCTIONS] for getScopeChaindict
@@ -33,6 +37,7 @@ class BindLibrary(object):
         self._terms = terms
         self.scope_dict = make_scope_dict(terms)
         self.cache = {}
+        self.gnb_cache = {}
 
     def dfx_memoize(f):
         def helper(self, target_tree, tree_list, bit, dftype):
@@ -141,18 +146,18 @@ class BindLibrary(object):
         return
 
 
-    def delete_cache(self):
-        global cache
-        cache = {}
+    def delete_all_cache(self):
+        self.cache = {}
+        self.gnb_cache= {}
 
     def gnb_memoize(f):
-        def helper(x,y,z):
-            if (x,y,z) not in cache:
-               cache[(x,y,z)] = f(x,y,z)
-            return cache[(x,y,z)]
+        def helper(self,y,z):
+            if (y,z) not in self.gnb_cache:
+               self.gnb_cache[(y,z)] = f(self,y,z)
+            return self.gnb_cache[(y,z)]
         return helper
 
-    #@gnb_memoize
+    @gnb_memoize
     def get_next_bind(self, scope, bit):
         """[FUNCTIONS] get root bind.(mainly use at 'Rename' terminal.)
         """
@@ -226,7 +231,7 @@ class BindLibrary(object):
         else:
             return 0
 
-    def eval_value(self, tree):
+    def eval_value(self, tree):#TODO need refactoring
         if isinstance(tree, pyverilog.dataflow.dataflow.DFOperator):
             for nextnode in self.nextnodes:
                 assert(isinstance(nextnode, pyverilog.dataflow.dataflow.DFEvalValue)
@@ -259,3 +264,70 @@ class BindLibrary(object):
             return None
 
 class CombLoopException(Exception): pass
+
+class MothernodeSetter(BindLibrary) :
+    def __init__(self, bind_library) :
+        self._binddict = bind_library._binddict
+        self._terms = bind_library._terms
+        self.scope_dict = bind_library.scope_dict
+        self.cache = bind_library.cache
+        self.gnb_cache = bind_library.gnb_cache
+        self.disable_dfxxx_eq()
+
+    def set_mother_node(f):
+        def helper(self, target_tree, tree_list, bit, dftype):
+            tree_list = f(self, target_tree, tree_list, bit, dftype)
+            if tree_list:
+                for tree, bit in tree_list:
+                    tree.mother_node = target_tree
+            return tree_list
+        return helper
+
+    @set_mother_node
+    def extract_all_dfxxx(self, target_tree, tree_list, bit, dftype):
+        return BindLibrary.extract_all_dfxxx(self, target_tree, tree_list, bit, dftype)
+
+    def disable_dfxxx_eq(self):
+        """ [FUNCTIONS]
+            Chenge df***.__eq__()method to identify each tree.
+        """
+        DFConstant.__eq__ = MethodType(return_false, None, DFConstant)
+        DFEvalValue.__eq__ = MethodType(return_false, None, DFEvalValue)
+        DFUndefined.__eq__ = MethodType(return_false, None, DFUndefined)
+        DFHighImpedance.__eq__ = MethodType(return_false, None, DFHighImpedance)
+        DFTerminal.__eq__ = MethodType(return_false, None, DFTerminal)
+        DFBranch.__eq__ = MethodType(return_false, None, DFBranch)
+        DFOperator.__eq__ = MethodType(return_false, None, DFOperator)
+        DFPartselect.__eq__ = MethodType(return_false, None, DFPartselect)
+        DFPointer.__eq__ = MethodType(return_false, None, DFPointer)
+        DFConcat.__eq__ = MethodType(return_false, None, DFConcat)
+        #DFDelay.__eq__ = MethodType(return_false, None, DFDelay)
+        #DFSyscall.__eq__ = MethodType(return_false, None, DFSyscall)
+
+def return_false(self, other):
+    return False
+
+def eval_value(tree):
+    if isinstance(tree, pyverilog.dataflow.dataflow.DFOperator):
+        for nextnode in self.nextnodes:
+            assert(isinstance(nextnode, pyverilog.dataflow.dataflow.DFEvalValue)
+                or isinstance(nextnode, pyverilog.dataflow.dataflow.DFIntConst)
+                or isinstance(nextnode, pyverilog.dataflow.dataflow.DFOperator)
+                or isinstance(nextnode, pyverilog.dataflow.dataflow.DFTerminal))
+        if self.operator == 'Plus':
+            return self.eval_value(nextnodes[0]) + self.eval_value(nextnodes[1])
+        elif self.operator == 'Minus':
+            return self.eval_value(nextnodes[0]) - self.eval_value(nextnodes[1])
+        elif self.operator == 'Times':
+            return self.eval_value(nextnodes[0]) * self.eval_value(nextnodes[1])
+        else:#unimplemented
+            raise Exception
+    elif isinstance(tree, pyverilog.dataflow.dataflow.DFTerminal):
+        if self.get_scope(scopedict) in binddict.keys():
+            return binddict[self.get_scope(scopedict)][0].tree.eval()
+        else:
+            raise verror.ImplementationError()
+    elif isinstance(tree, pyverilog.dataflow.dataflow.DFIntConst):
+        return tree.eval()
+    elif isinstance(tree, pyverilog.dataflow.dataflow.DFEvalValue):
+        return tree.value
