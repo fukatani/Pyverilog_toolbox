@@ -18,11 +18,18 @@ from pyverilog_toolbox.verify_tool.regmap_analyzer import *
 from pyverilog_toolbox.verify_tool.combloop_finder import *
 from pyverilog_toolbox.verify_tool.bindlibrary import *
 from pyverilog_toolbox.verify_tool.cnt_analyzer import *
+from pyverilog_toolbox.verify_tool.codeclone_finder import CodeCloneFinder
 import unittest
 
 class TestSequenceFunctions(unittest.TestCase):
     def setUp(self):
         pass
+
+##    def test_reg_clone(self):
+##        cc_finder = CodeCloneFinder("reg_clone.v")
+##        cc_finder.search_regclone()
+##        self.assertEqual(str(cc_finder.search_regclone()),
+##                        '[((TOP.reg3, 0), (TOP.sub.reg1, 0)), ((TOP.sub.reg1, 0), (TOP.reg1, 0))]')
 
     def test_cnt_analyzer(self):
         c_analyzer = CntAnalyzer("norm_cnt2.v")
@@ -45,6 +52,7 @@ class TestSequenceFunctions(unittest.TestCase):
         write_map, read_map = ranalyzer.getRegMaps()
         self.assertEqual(str(write_map.map), "{0: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1)}, 1: {0: ('TOP.reg1', 0)}}")
         self.assertEqual(str(read_map.map), "{0: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1)}, 1: {0: ('TOP.reg1', 0)}}")
+
     def test_split(self):
         ranalyzer = RegMapAnalyzer("regmap_split.v", "setup.txt")
         write_map, read_map = ranalyzer.getRegMaps()
@@ -82,7 +90,6 @@ class TestSequenceFunctions(unittest.TestCase):
         c_finder = CombLoopFinder("combloop2.v")
         with self.assertRaises(CombLoopException):
             c_finder.search_combloop()
-
 
 if __name__ == '__main__':
     unittest.main()

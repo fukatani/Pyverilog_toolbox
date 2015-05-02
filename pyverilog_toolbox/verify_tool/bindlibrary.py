@@ -65,7 +65,7 @@ class BindLibrary(object):
                 if not target_bind.isCombination():
                     tree_list.add((target_tree, bit + target_term_lsb))
             else:#TOP Input port
-                tree_list.add((target_tree, bit + self.eval_value(self._terms[self.scope_dict[str(target_tree)]].lsb)))
+                tree_list.add((target_tree, bit + eval_value(self._terms[self.scope_dict[str(target_tree)]].lsb)))
         else:
             if isinstance(target_tree, dftype):
                 tree_list.add((target_tree, bit))
@@ -97,8 +97,8 @@ class BindLibrary(object):
                 if target_bind.isCombination():
                     tree_list = self.extract_all_dfxxx(target_bind.tree, tree_list, bit, dftype)
         elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFPartselect):
-            #ref_bit = self.eval_value(target_tree.lsb) + bit
-            ref_bit = self.eval_value(target_tree.lsb) + bit - self.eval_value(self._terms[self.scope_dict[str(target_tree.var)]].lsb)
+            #ref_bit = eval_value(target_tree.lsb) + bit
+            ref_bit = eval_value(target_tree.lsb) + bit - eval_value(self._terms[self.scope_dict[str(target_tree.var)]].lsb)
             tree_list = self.extract_all_dfxxx(target_tree.var, tree_list, ref_bit, dftype)
         return tree_list
 
@@ -141,7 +141,7 @@ class BindLibrary(object):
                 if target_bind.isCombination():
                     self.search_combloop(target_bind.tree, bit, start_tree, start_bit, find_cnt)
         elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFPartselect):
-            ref_bit = self.eval_value(target_tree.lsb) + bit - self.eval_value(self._terms[self.scope_dict[str(target_tree.var)]].lsb)
+            ref_bit = eval_value(target_tree.lsb) + bit - eval_value(self._terms[self.scope_dict[str(target_tree.var)]].lsb)
             self.search_combloop(target_tree.var, ref_bit, start_tree, start_bit, find_cnt)
         return
 
@@ -163,10 +163,10 @@ class BindLibrary(object):
         """
         if scope in self._binddict.keys():
             target_binds = self._binddict[scope]
-            target_bind_index = self.get_bind_index(target_binds, bit + self.eval_value(self._terms[scope].lsb), self._terms[scope])
+            target_bind_index = self.get_bind_index(target_binds, bit + eval_value(self._terms[scope].lsb), self._terms[scope])
             #target_bind_index = self.get_bind_index(target_binds, bit, self._terms[scope])
             target_bind = target_binds[target_bind_index]
-            return target_bind, self.eval_value(self._terms[scope].lsb)
+            return target_bind, eval_value(self._terms[scope].lsb)
         else:
             return None, self._terms[scope].lsb
 
@@ -192,9 +192,9 @@ class BindLibrary(object):
         onebit_comb = ('Ulnot','Unot','Eq', 'Ne','Lor','Land','Unand','Uor','Unor','Uxor','Uxnor')
         if isinstance(tree, pyverilog.dataflow.dataflow.DFTerminal):
             term = self._terms[self.get_scope(tree)]
-            return self.eval_value(term.msb)  + 1
+            return eval_value(term.msb)  + 1
         elif isinstance(tree, pyverilog.dataflow.dataflow.DFPartselect):
-            return self.eval_value(tree.msb) - self.eval_value(tree.lsb) + 1
+            return eval_value(tree.msb) - eval_value(tree.lsb) + 1
         elif isinstance(tree, pyverilog.dataflow.dataflow.DFOperator):
             if tree.operator in onebit_comb:
                 return 1
@@ -230,31 +230,6 @@ class BindLibrary(object):
             return bind.msb.value
         else:
             return 0
-
-    def eval_value(self, tree):#TODO need refactoring
-        if isinstance(tree, pyverilog.dataflow.dataflow.DFOperator):
-            for nextnode in self.nextnodes:
-                assert(isinstance(nextnode, pyverilog.dataflow.dataflow.DFEvalValue)
-                    or isinstance(nextnode, pyverilog.dataflow.dataflow.DFIntConst)
-                    or isinstance(nextnode, pyverilog.dataflow.dataflow.DFOperator)
-                    or isinstance(nextnode, pyverilog.dataflow.dataflow.DFTerminal))
-            if self.operator == 'Plus':
-                return self.eval_value(nextnodes[0]) + self.eval_value(nextnodes[1])
-            elif self.operator == 'Minus':
-                return self.eval_value(nextnodes[0]) - self.eval_value(nextnodes[1])
-            elif self.operator == 'Times':
-                return self.eval_value(nextnodes[0]) * self.eval_value(nextnodes[1])
-            else:#unimplemented
-                raise Exception
-        elif isinstance(tree, pyverilog.dataflow.dataflow.DFTerminal):
-            if self.get_scope(scopedict) in binddict.keys():
-                return binddict[self.get_scope(scopedict)][0].tree.eval()
-            else:
-                raise verror.ImplementationError()
-        elif isinstance(tree, pyverilog.dataflow.dataflow.DFIntConst):
-            return tree.eval()
-        elif isinstance(tree, pyverilog.dataflow.dataflow.DFEvalValue):
-            return tree.value
 
     def get_scope(self, tree):
         name = str(tree)
@@ -315,11 +290,11 @@ def eval_value(tree):
                 or isinstance(nextnode, pyverilog.dataflow.dataflow.DFOperator)
                 or isinstance(nextnode, pyverilog.dataflow.dataflow.DFTerminal))
         if self.operator == 'Plus':
-            return self.eval_value(nextnodes[0]) + self.eval_value(nextnodes[1])
+            return eval_value(nextnodes[0]) + eval_value(nextnodes[1])
         elif self.operator == 'Minus':
-            return self.eval_value(nextnodes[0]) - self.eval_value(nextnodes[1])
+            return eval_value(nextnodes[0]) - eval_value(nextnodes[1])
         elif self.operator == 'Times':
-            return self.eval_value(nextnodes[0]) * self.eval_value(nextnodes[1])
+            return eval_value(nextnodes[0]) * eval_value(nextnodes[1])
         else:#unimplemented
             raise Exception
     elif isinstance(tree, pyverilog.dataflow.dataflow.DFTerminal):
@@ -331,3 +306,5 @@ def eval_value(tree):
         return tree.eval()
     elif isinstance(tree, pyverilog.dataflow.dataflow.DFEvalValue):
         return tree.value
+
+
