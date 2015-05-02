@@ -25,11 +25,11 @@ class TestSequenceFunctions(unittest.TestCase):
     def setUp(self):
         pass
 
-##    def test_reg_clone(self):
-##        cc_finder = CodeCloneFinder("reg_clone.v")
-##        cc_finder.search_regclone()
-##        self.assertEqual(str(cc_finder.search_regclone()),
-##                        '[((TOP.reg3, 0), (TOP.sub.reg1, 0)), ((TOP.sub.reg1, 0), (TOP.reg1, 0))]')
+    def test_reg_clone(self):
+        cc_finder = CodeCloneFinder("reg_clone.v")
+        cc_finder.search_regclone()
+        self.assertEqual(str(cc_finder.search_regclone()),
+                        '[((TOP.reg3, 0), (TOP.sub.reg1, 0)), ((TOP.sub.reg1, 0), (TOP.reg1, 0))]')
 
     def test_cnt_analyzer(self):
         c_analyzer = CntAnalyzer("norm_cnt2.v")

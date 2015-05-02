@@ -241,6 +241,10 @@ class BindLibrary(object):
 class CombLoopException(Exception): pass
 
 class MothernodeSetter(BindLibrary) :
+    """[CLASSES]
+    set mother node for all nodes.
+    need expressly call destructer.
+    """
     def __init__(self, bind_library) :
         self._binddict = bind_library._binddict
         self._terms = bind_library._terms
@@ -248,6 +252,9 @@ class MothernodeSetter(BindLibrary) :
         self.cache = bind_library.cache
         self.gnb_cache = bind_library.gnb_cache
         self.disable_dfxxx_eq()
+
+    def __del__(self):
+        self.enable_dfxxx_eq()
 
     def set_mother_node(f):
         def helper(self, target_tree, tree_list, bit, dftype):
@@ -279,8 +286,60 @@ class MothernodeSetter(BindLibrary) :
         #DFDelay.__eq__ = MethodType(return_false, None, DFDelay)
         #DFSyscall.__eq__ = MethodType(return_false, None, DFSyscall)
 
+    def enable_dfxxx_eq(self):
+        DFConstant.__eq__ = MethodType(DFConstant_eq_org, None, DFConstant)
+        DFEvalValue.__eq__ = MethodType(DFEvalValue_eq_org, None, DFEvalValue)
+        DFUndefined.__eq__ = MethodType(DFUndefined_eq_org, None, DFUndefined)
+        DFHighImpedance.__eq__ = MethodType(DFHighImpedance_eq_org, None, DFHighImpedance)
+        DFTerminal.__eq__ = MethodType(DFTerminal_eq_org, None, DFTerminal)
+        DFBranch.__eq__ = MethodType(DFBranch_eq_org, None, DFBranch)
+        DFOperator.__eq__ = MethodType(DFOperator_eq_org, None, DFOperator)
+        DFPartselect.__eq__ = MethodType(DFPartselect_eq_org, None, DFPartselect)
+        DFPointer.__eq__ = MethodType(DFPointer_eq_org, None, DFPointer)
+        DFConcat.__eq__ = MethodType(DFConcat_eq_org, None, DFConcat)
+
 def return_false(self, other):
     return False
+
+def DFConstant_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.value == other.value
+
+def DFEvalValue_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.value == other.value and self.width == other.width and self.isfloat == other.isfloat and self.isstring == other.isstring
+
+def DFUndefined_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.width == other.width
+
+def DFHighImpedance_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.width == other.width
+
+def DFTerminal_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.name == other.name
+
+def DFBranch_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.condnode == other.condnode and self.truenode == other.truenode and self.falsenode == other.falsenode
+
+def DFOperator_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.operator == other.operator and self.nextnodes == other.nextnodes
+
+def DFPartselect_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.var == other.var and self.msb == other.msb and self.lsb == other.lsb
+
+def DFPointer_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.var == other.var and self.ptr == other.ptr
+
+def DFConcat_eq_org(self, other):
+    if type(self) != type(other): return False
+    return self.nextnodes == other.nextnodes
 
 def eval_value(tree):
     if isinstance(tree, pyverilog.dataflow.dataflow.DFOperator):

@@ -98,6 +98,7 @@ class CntAnalyzer(dataflow_facade):
                 cnt_ref_dict[term_name] = cnt_ref_branch
             #print cnt_name, cnt_ref_dict
             counter.make_cnt_event_dict(cnt_ref_dict)
+        del m_setter
 
     def get_reset_value(self, cnt_name, target_tree, reset_name):
         if target_tree.condnode.operator == 'Ulnot':
