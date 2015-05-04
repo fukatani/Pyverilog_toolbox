@@ -30,9 +30,9 @@ class CodeCloneFinder(dataflow_facade):
         ex.
         always @(posedge CLK or negedge RST) begin
             if(RST) begin
-                reg2 <= 1'b0;
+                reg1 <= 1'b0;
             end else begin
-                reg2 <= IN;
+                reg1 <= IN;
             end
         end
 
@@ -40,9 +40,9 @@ class CodeCloneFinder(dataflow_facade):
 
         always @(posedge CLK or negedge RST) begin
             if(RST) begin
-                reg3 <= 1'b0;
+                reg2 <= 1'b0;
             end else begin
-                reg3 <= in1;
+                reg2 <= in1;
             end
         end
         """
