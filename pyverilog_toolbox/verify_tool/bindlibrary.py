@@ -219,6 +219,10 @@ class BindLibrary(object):
                     for bit in range(bind_lsb, bind_msb + 1):
                         yield tv, tk, bvi, bit, bind_lsb
 
+    def walk_signal(self):
+        for tk, tv in sorted(self._terms.items(), key=lambda x:len(x[0])):
+            yield tv, tk
+
     def get_bind_lsb(self, bind):
         if bind.lsb:
             return bind.lsb.value

@@ -19,6 +19,7 @@ from pyverilog_toolbox.verify_tool.combloop_finder import *
 from pyverilog_toolbox.verify_tool.bindlibrary import *
 from pyverilog_toolbox.verify_tool.cnt_analyzer import *
 from pyverilog_toolbox.verify_tool.codeclone_finder import CodeCloneFinder
+from pyverilog_toolbox.verify_tool.unreferenced_finder import UnreferencedFinder
 import unittest
 
 class TestSequenceFunctions(unittest.TestCase):
@@ -32,6 +33,11 @@ class TestSequenceFunctions(unittest.TestCase):
                         '[((TOP.reg3, 0), (TOP.sub.reg1, 0)), ((TOP.sub.reg1, 0), (TOP.reg1, 0))]')
         self.assertEqual(str(cc_finder.search_invert_regs()),
                         '[((TOP.sub.reg1, 0), (TOP.reg4, 0)), ((TOP.reg1, 0), (TOP.reg4, 0)), ((TOP.reg3, 0), (TOP.reg4, 0))]')
+
+    def test_unreferenced(self):
+        u_finder = UnreferencedFinder("unreferenced_variables.v")
+        self.assertEqual(str(u_finder.search_unreferenced()),
+                        '[\'TOP.reg2\', \'TOP.IN2\', \'TOP.reg3\', \'TOP.sub.IN\']')
 
     def test_cnt_analyzer(self):
         c_analyzer = CntAnalyzer("norm_cnt2.v")
