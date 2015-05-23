@@ -158,7 +158,7 @@ Combinational logic loop is sticky problem, but you can find it by combloop_find
 
 
 ```
-python regmap_combloop_finder.py xxxx.v
+python combloop_finder.py xxxx.v
 ```
 
 if there is a combinational loop in your design, combloop_finder raise error and specify loop occurrence place.
@@ -295,8 +295,11 @@ Copyright
 
 Copyright (C) 2015, Ryosuke Fukatani
 
-Related Project
+Related Project and Site
 ==============================
 
 Pyverilog
 https://github.com/shtaxxx/Pyverilog
+
+Blog entry(in Japanese)
+http://segafreder.hatenablog.com/entry/2015/05/23/161000
