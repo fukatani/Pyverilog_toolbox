@@ -5,3 +5,7 @@ pyverilog_toolbox/testcode/parsetab.py
 *.out
 pyverilog_toolbox/verify_tool/out.csv
 *.csv
+pyverilog_toolbox/testcode/simple.v
+pyverilog_toolbox/testcode/test1.v
+pyverilog_toolbox/testcode/test2.v
+pyverilog_toolbox/verify_tool/refactor.py
