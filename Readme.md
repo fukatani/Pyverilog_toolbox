@@ -24,6 +24,11 @@ If you use Python 2.7,
 python setup.py install
 ```
 
+Or you can use pip
+```
+pip install pyverilo_toolbox
+```
+
 Python 3.x is not tried by author.
 
 

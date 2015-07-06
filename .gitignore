@@ -9,3 +9,6 @@ pyverilog_toolbox/testcode/simple.v
 pyverilog_toolbox/testcode/test1.v
 pyverilog_toolbox/testcode/test2.v
 pyverilog_toolbox/verify_tool/refactor.py
+build/
+dist/
+pyverilog_toolbox.egg-info/
