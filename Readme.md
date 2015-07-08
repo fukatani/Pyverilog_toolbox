@@ -39,46 +39,20 @@ Tools
 codeclone_finder can find pair of the register clone, which always hold same value.
 Also can find pair of the invert register, which always hold different value.
 
-[usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/codeclone.md "codeclone_finder")
+[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/codeclone.md "codeclone_finder")
 
 ## regmap_analyzer
 
 regmap_analyzer can analyze register map structure from RTL.
 After install Pyverilog_toolbox, you can use regmap analyzer by this command.
 
-[usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/regmap.md "regmap_analyzer")
+[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/regmap.md "regmap_analyzer")
 
 ## combloop_finder
 
 Combinational logic loop is sticky problem, but you can find it by combloop_finder easily.
 
-
-
-```
-python combloop_finder.py xxxx.v
-```
-
-if there is a combinational loop in your design, combloop_finder raise error and specify loop occurrence place.
-
-ex.
-
-```
-module TOP(CLK, RST);
-  input CLK,RST;
-  wire wire1,wire2,wire3;
-
-  assign wire1 = wire2;
-  assign wire2 = !wire3;
-  assign wire3 = wire1;
-
-endmodule
-```
-
-
-Output:
-```
-CombLoopException: Combinational loop is found @TOP.wire3
-```
+[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/combloop.md "combloop_finder")
 
 ## cnt_analyzer
 
