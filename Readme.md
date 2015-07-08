@@ -26,7 +26,7 @@ python setup.py install
 
 Or you can use pip
 ```
-pip install pyverilo_toolbox
+pip install pyverilog_toolbox
 ```
 
 Python 3.x is not tried by author.
@@ -35,7 +35,7 @@ Python 3.x is not tried by author.
 Usage
 ==============================
 
-## codeclone_finder
+## [codeclone_finder](https://github.com/fukatani/Pyverilog_toolbox/blob/master/codeclone.md "codeclone_finder"))
 codeclone_finder can find pair of the register clone, which always hold same value.
 Also can find pair of the invert register, which always hold different value.
 
