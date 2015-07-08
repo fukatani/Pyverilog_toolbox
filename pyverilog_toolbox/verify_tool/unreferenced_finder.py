@@ -48,6 +48,3 @@ class UnreferencedFinder(dataflow_facade):
 if __name__ == '__main__':
     u_finder = UnreferencedFinder("../testcode/unreferenced_variables.v")
     u_finder.search_unreferenced()
-
-
-

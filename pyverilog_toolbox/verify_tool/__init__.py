@@ -7,3 +7,4 @@ if sys.version_info[0] < 3:
     import codeclone_finder
     import cnt_analyzer
     import unreferenced_finder
+    import metrics_calculator
