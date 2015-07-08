@@ -1,4 +1,4 @@
-##USAGE
+## CODECLONE_FINDER USAGE
 
 After install Pyverilog_toolbox, you can use codeclone_finder by this command.
 
