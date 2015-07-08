@@ -42,7 +42,7 @@ class UnreferencedFinder(dataflow_facade):
             for tree, bit in trees:
                 if str(tree) in signals:
                     signals.remove(str(tree))
-        print signals
+        print "finded unreferenced variables: " + str(signals)
         return signals
 
 if __name__ == '__main__':

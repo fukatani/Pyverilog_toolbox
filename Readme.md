@@ -41,18 +41,25 @@ Also can find pair of the invert register, which always hold different value.
 
 [Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/codeclone.md "codeclone_finder")
 
+## combloop_finder
+
+Combinational logic loop is sticky problem, but you can find it by combloop_finder easily.
+
+[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/combloop.md "combloop_finder")
+
+
+## unreferenced_finder
+Unreferenced_finder can find signals which isn't referenced by any signals.
+By using this, you can delte unnecessary codes.
+
+[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/unreferenced.md "unreferenced_finder")
+
 ## regmap_analyzer
 
 regmap_analyzer can analyze register map structure from RTL.
 After install Pyverilog_toolbox, you can use regmap analyzer by this command.
 
 [Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/regmap.md "regmap_analyzer")
-
-## combloop_finder
-
-Combinational logic loop is sticky problem, but you can find it by combloop_finder easily.
-
-[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/combloop.md "combloop_finder")
 
 ## cnt_analyzer
 
