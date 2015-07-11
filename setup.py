@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 import re
 import os
 
-version = '0.0.0'
+version = '0.0.1'
 
 def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
@@ -25,5 +25,6 @@ setup(name='pyverilog_toolbox',
       license="Apache License 2.0",
       packages=find_packages(),
       package_data={ 'pyverilog_toolbox' : ['testcode/*'], },
+      long_description=read_md('README.md'),
 )
 

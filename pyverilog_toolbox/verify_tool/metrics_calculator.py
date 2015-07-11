@@ -48,19 +48,57 @@ class MetricsCalculator(dataflow_facade):
         module_elements.pow_for_clk = 2
         module_elements.coef_for_rst = 2
         module_elements.pow_for_rst = 1
-
         #initializing parameters for module metrics
+        reg_elements.coef_for_branch = 1
+        reg_elements.pow_for_branch = 1
+        reg_elements.coef_for_nest = 1
+        reg_elements.pow_for_nest = 2
 
     def calc_metrics(self):
         """[FUNCTIONS]
         Calculating verilog code metrics.
         """
+        r_metrics_dict = self.calc_reg_metrics()
         m_metrics_dict = self.calc_module_metrics()
-        return m_metrics_dict, None, None
+        return m_metrics_dict, r_metrics_dict, None
 
-    # TODO
+    # TODO count if
     def calc_reg_metrics(self):
-        pass
+        for tv,tk in self.binds.walk_signal():
+            if not 'Reg' in tv.termtype: continue
+            branch_cnt = 0
+            if not tk in self.binddict.keys(): continue #no implement reg
+            for i, bind in enumerate(self.binddict[tk]):
+                self.reg_metrics_elements[str(getScope(tk)), i] = reg_elements()
+
+                branch_cnt = self.walk_for_count_branch(bind.tree)
+                self.reg_metrics_elements[str(getScope(tk)), i].set_branch_cnt(branch_cnt)
+
+                _, nest_cnt = self.walk_for_count_nest(bind.tree, count = 1)
+                self.reg_metrics_elements[str(getScope(tk)), i].set_nest_cnt(nest_cnt)
+        return { str(key):elements.calc_metrics()  for key, elements in self.reg_metrics_elements.items()}
+
+    def walk_for_count_branch(self, tree, count=0):
+        """ [FUNCTIONS]
+        Count up if/else/case branches number.
+        """
+        if isinstance(tree, pyverilog.dataflow.dataflow.DFBranch):
+            count += 1
+            count = self.walk_for_count_branch(tree.truenode, count)
+            count = self.walk_for_count_branch(tree.falsenode, count)
+        return count
+
+    def walk_for_count_nest(self, tree, count=0, max_count=0):
+        """ [FUNCTIONS]
+        Count up depth of if/else/case nest.
+        """
+        if isinstance(tree, pyverilog.dataflow.dataflow.DFBranch):
+            count += 1
+            count, max_count = self.walk_for_count_nest(tree.truenode, count, max_count)
+            count -= 1
+            count, max_count = self.walk_for_count_nest(tree.falsenode, count, max_count)
+        max_count = max_count if count < max_count else count
+        return count, max_count
 
     def calc_module_metrics(self):
         def initialize_elements_dict():
@@ -78,9 +116,6 @@ class MetricsCalculator(dataflow_facade):
                 for bvi in self.binddict[tk]:
                     self.module_metrics_elements[str(getScope(tk))].add_clk(bvi.getClockName())
                     self.module_metrics_elements[str(getScope(tk))].add_rst(bvi.getResetName())
-
-        for module, elements in self.module_metrics_elements.items():
-            print str(module) + ': ' + str(elements.calc_metrics())
         return { str(module):elements.calc_metrics()  for module, elements in self.module_metrics_elements.items()}
 
 
@@ -93,6 +128,13 @@ class reg_elements(metrics_elements):
         self.if_nest_num = 0
         self.if_num = 0
         self.var_num = 0
+    def set_branch_cnt(self, branch_cnt):
+        self.branch_cnt = branch_cnt
+    def set_nest_cnt(self, nest_cnt):
+        self.nest_cnt = nest_cnt
+    def calc_metrics(self):
+        return ((self.branch_cnt * self.coef_for_branch) ** self.pow_for_branch +
+                (self.nest_cnt * self.coef_for_nest) ** self.pow_for_nest)
 
 class module_elements(object):
 
@@ -124,9 +166,13 @@ class module_elements(object):
                 (len(self.clks) * self.coef_for_clk) ** self.pow_for_clk +
                 (len(self.rsts) * self.coef_for_rst) ** self.pow_for_rst)
 
+def display_metrics(metrics_dict):
+    for key, value in metrics_dict.items():
+        print str(key) + ': ' + str(value)
+
 if __name__ == '__main__':
-    c_m = MetricsCalculator("../testcode/metrics_test.v")
-    c_m.calc_metrics()
-
-
+    c_m = MetricsCalculator("../testcode/metrics_test2.v")
+    m_metrics, r_metrics, f_metrics = c_m.calc_metrics()
+    display_metrics(m_metrics)
+    display_metrics(r_metrics)
 
