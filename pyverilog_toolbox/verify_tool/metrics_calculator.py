@@ -32,9 +32,6 @@ class MetricsCalculator(dataflow_facade):
         """
         dataflow_facade.__init__(self, code_file_name)
         self.result_file_name = result_file
-
-        self.module_metrics_elements = {}
-        self.reg_metrics_elements = {}
         self.function_metrics_elements = {}
 
         #initializing parameters for module metrics
@@ -53,30 +50,46 @@ class MetricsCalculator(dataflow_facade):
         reg_elements.pow_for_branch = 1
         reg_elements.coef_for_nest = 1
         reg_elements.pow_for_nest = 2
+        #initializing parameters for function metrics
+        func_elements.coef_for_var = 2
+        func_elements.pow_for_var = 1
 
     def calc_metrics(self):
         """[FUNCTIONS]
         Calculating verilog code metrics.
         """
+        f_metrics_dict = self.calc_function_metrics()
         r_metrics_dict = self.calc_reg_metrics()
         m_metrics_dict = self.calc_module_metrics()
-        return m_metrics_dict, r_metrics_dict, None
+        return m_metrics_dict, r_metrics_dict, f_metrics_dict
 
-    # TODO count if
+    def calc_function_metrics(self):
+        func_metrics_elements = {}
+        for tv,tk in self.binds.walk_signal():
+            if not 'Function' in tv.termtype: continue
+            for i, bind in enumerate(self.resolved_binddict[tk]):
+                trees = self.binds.extract_all_dfxxx(bind.tree, set([]), 0, pyverilog.dataflow.dataflow.DFTerminal)
+                if len(trees) > 1: # omit 1 variable function
+                    func_metrics_elements[str(getScope(tk)), i] = func_elements()
+                    func_metrics_elements[str(getScope(tk)), i].set_var(len(trees))
+        return { str(key):elements.calc_metrics()  for key, elements in func_metrics_elements.items()}
+
     def calc_reg_metrics(self):
+        reg_metrics_elements = {}
         for tv,tk in self.binds.walk_signal():
             if not 'Reg' in tv.termtype: continue
             branch_cnt = 0
             if not tk in self.binddict.keys(): continue #no implement reg
             for i, bind in enumerate(self.binddict[tk]):
-                self.reg_metrics_elements[str(getScope(tk)), i] = reg_elements()
+                reg_metrics_elements[str(getScope(tk)), i] = reg_elements()
 
                 branch_cnt = self.walk_for_count_branch(bind.tree)
-                self.reg_metrics_elements[str(getScope(tk)), i].set_branch_cnt(branch_cnt)
+                reg_metrics_elements[str(getScope(tk)), i].set_branch_cnt(branch_cnt)
 
                 _, nest_cnt = self.walk_for_count_nest(bind.tree, count = 1)
-                self.reg_metrics_elements[str(getScope(tk)), i].set_nest_cnt(nest_cnt)
-        return { str(key):elements.calc_metrics()  for key, elements in self.reg_metrics_elements.items()}
+                reg_metrics_elements[str(getScope(tk)), i].set_nest_cnt(nest_cnt)
+
+        return { str(key):elements.calc_metrics()  for key, elements in reg_metrics_elements.items()}
 
     def walk_for_count_branch(self, tree, count=0):
         """ [FUNCTIONS]
@@ -101,27 +114,35 @@ class MetricsCalculator(dataflow_facade):
         return count, max_count
 
     def calc_module_metrics(self):
+        module_metrics_elements = {}
         def initialize_elements_dict():
             for tv,tk in self.binds.walk_signal():
                 if 'Function' in tv.termtype or 'Rename' in tv.termtype: continue
-                if not str(getScope(tk)) in self.module_metrics_elements.keys():
-                    self.module_metrics_elements[str(getScope(tk))] = module_elements()
+                if not str(getScope(tk)) in module_metrics_elements.keys():
+                    module_metrics_elements[str(getScope(tk))] = module_elements()
 
         initialize_elements_dict()
         for tv,tk in self.binds.walk_signal():
             if 'Function' in tv.termtype or 'Rename' in tv.termtype: continue
             for eachtype in tv.termtype:
-                self.module_metrics_elements[str(getScope(tk))].add_element(eachtype)
+                module_metrics_elements[str(getScope(tk))].add_element(eachtype)
             if 'Reg' in tv.termtype and tk in self.binddict.keys():
                 for bvi in self.binddict[tk]:
-                    self.module_metrics_elements[str(getScope(tk))].add_clk(bvi.getClockName())
-                    self.module_metrics_elements[str(getScope(tk))].add_rst(bvi.getResetName())
-        return { str(module):elements.calc_metrics()  for module, elements in self.module_metrics_elements.items()}
+                    module_metrics_elements[str(getScope(tk))].add_clk(bvi.getClockName())
+                    module_metrics_elements[str(getScope(tk))].add_rst(bvi.getResetName())
+        return { str(module):elements.calc_metrics()  for module, elements in module_metrics_elements.items()}
 
 
 class metrics_elements(object):
     def calc_metrics(self): pass
-    def add_element(self): pass
+
+class func_elements(metrics_elements):
+    def __init__(self):
+        self.var_num = 0
+    def set_var(self, var_num):
+        self.var_num = var_num
+    def calc_metrics(self):
+        return (self.var_num * self.coef_for_var) ** self.pow_for_var
 
 class reg_elements(metrics_elements):
     def __init__(self):
@@ -171,8 +192,8 @@ def display_metrics(metrics_dict):
         print str(key) + ': ' + str(value)
 
 if __name__ == '__main__':
-    c_m = MetricsCalculator("../testcode/metrics_test2.v")
+    c_m = MetricsCalculator("../testcode/metrics_func.v")
     m_metrics, r_metrics, f_metrics = c_m.calc_metrics()
     display_metrics(m_metrics)
     display_metrics(r_metrics)
-
+    display_metrics(f_metrics)

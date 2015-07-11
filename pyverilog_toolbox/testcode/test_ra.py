@@ -39,6 +39,13 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertEqual(m_metrics['TOP'], 19)
         self.assertEqual(r_metrics["('TOP', 0)"], 25)
 
+    def test_metrics_func(self):
+        m_calculator = MetricsCalculator("metrics_func.v")
+        m_metrics, r_metrics, f_metrics = m_calculator.calc_metrics()
+        self.assertEqual(m_metrics['TOP'], 19)
+        self.assertEqual(r_metrics["('TOP', 0)"], 1)
+        self.assertEqual(f_metrics["('TOP.md_always0.al_block0.al_functioncall0', 0)"], 4)
+
     def test_reg_clone(self):
         cc_finder = CodeCloneFinder("reg_clone.v")
         cc_finder.search_regclone()
