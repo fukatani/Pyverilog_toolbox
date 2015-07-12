@@ -1,7 +1,8 @@
 ## metrics_analyzer usage
 
 metrics_analyzer is metrics measurment tools for Verilog HDL.
-You can visualize complecity of module/register/function/.
+You can visualize complexity of module/register/function/ for refactoring.
+Large score means complex module/register/function/.
 
 ```
 python metrics_analyzer.py xxxx.v
@@ -132,4 +133,4 @@ REG_DISP_LIMIT':
 FUNC_DISP_LIMIT':
 ```
 
-You may write only parameter which you want to change from default parameter.
+You may write only parameter which you want to change from default parameter in configuration file.
