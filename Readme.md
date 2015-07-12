@@ -54,6 +54,13 @@ By using this, you can delte unnecessary codes.
 
 [Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/unreferenced.md "unreferenced_finder")
 
+##metrics_calculator
+
+metrics_analyzer is metrics measurment tools for Verilog HDL.
+You can visualize complecity of module/register/function/.
+
+[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/metrics.md "metrics_analyzer")
+
 ## regmap_analyzer
 
 regmap_analyzer can analyze register map structure from RTL.

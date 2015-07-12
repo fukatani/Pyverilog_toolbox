@@ -9,6 +9,7 @@ This feature help you finding redundunt counter, deadlock loop, and other counte
 python cnt_analyzer.py xxxx.v
 ```
 
+ex.
 Input verilog file:
 ```
 module TOP(CLK, RSTN, UP_ENABLE, UP_ENABLE2, CLEAR);
