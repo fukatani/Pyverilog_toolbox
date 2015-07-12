@@ -14,20 +14,27 @@ Each metrics is calculated as described below.
 Parameters corresponding to XXXX is different by each of metrics (module/register/function).
 
 
-# module metrics
+# module metrics arguments
 Number of input port in each module.
+
 Number of output port in each module.
+
 Number of register in each module.
+
 Number of clock in each module.
+
 Number of reset in each module.
 
-# register metrics
+# register metrics arguments
 Number of condition branch in each register.
+
 Max nest of control syntax in each register.
 
-# function metrics
+# function metrics arguments
 Number of condition branch in each function.
+
 Max nest of control syntax in each function.
+
 Number of arguments in each function.
 
 

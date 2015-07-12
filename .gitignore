@@ -12,3 +12,4 @@ pyverilog_toolbox/verify_tool/refactor.py
 build/
 dist/
 pyverilog_toolbox.egg-info/
+*.bat
