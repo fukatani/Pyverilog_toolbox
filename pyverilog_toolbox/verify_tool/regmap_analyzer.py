@@ -72,8 +72,8 @@ class MapFactory(object):
         try:
             setup_file = open(file_name, "r")
             for readline in setup_file:
+                if readline[0] == '#': continue
                 word_list = readline.split(':')
-                if readline[0:2] == '//': continue
                 if len(word_list) == 2:
                     if word_list[0] == 'WRITE_FLAG':
                         write_flag = word_list[1].replace('\n','')
