@@ -18,7 +18,7 @@ except ImportError:
 setup(name='pyverilog_toolbox',
       version=version,
       description='Pyverilog-based verification/design tools',
-      keywords = 'Verilog, Register Map, code clone',
+      keywords = 'Verilog, Register Map, code clone, code metrics',
       author='Ryosuke Fukatani',
       author_email='nannyakannya@gmail.com',
       url='https://github.com/fukatani/Pyverilog_toolbox',

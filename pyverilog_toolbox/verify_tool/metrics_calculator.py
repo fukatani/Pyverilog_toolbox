@@ -120,27 +120,15 @@ class MetricsCalculator(dataflow_facade):
         except IOError:
             print(self.config_file + " can't open for read.")
 
-    def calc_metrics(self):
-        """[FUNCTIONS]
-        Calculating verilog code metrics.
-        Each metrics is returned as Dict(Order by metrics).
-        """
-        def sort_by_metrics_score(input_dict):
-            return_dict = OrderedDict()
-            for key, value in reversed(sorted(input_dict.items(), key=lambda x:x[1])):
-                return_dict[key] = value
-            return return_dict
+    def synth_profile(self):
+        f_elements_dict = self.calc_function_metrics()
+        self.f_profile = function_profile(f_elements_dict, self.func_disp_limit)
+        r_elements_dict = self.calc_reg_metrics()
+        self.r_profile = reg_profile(r_elements_dict, self.reg_disp_limit)
+        m_elements_dict = self.calc_module_metrics()
+        self.m_profile = module_profile(m_elements_dict, self.module_disp_limit)
 
-        f_metrics_dict = self.calc_function_metrics()
-        f_m_ordered = sort_by_metrics_score(f_metrics_dict)
-
-        r_metrics_dict = self.calc_reg_metrics()
-        r_m_ordered = sort_by_metrics_score(r_metrics_dict)
-
-        m_metrics_dict = self.calc_module_metrics()
-        m_m_ordered = sort_by_metrics_score(m_metrics_dict)
-
-        return m_m_ordered, r_m_ordered, f_m_ordered
+        return self.m_profile, self.r_profile, self.f_profile
 
     def calc_function_metrics(self):
         func_metrics_elements = {}
@@ -157,7 +145,7 @@ class MetricsCalculator(dataflow_facade):
 
                     _, nest_cnt = self.walk_for_count_nest(bind.tree, count = 1)
                     func_metrics_elements[str(getScope(tk)), i].set_nest_cnt(nest_cnt)
-        return { str(key):elements.calc_metrics()  for key, elements in func_metrics_elements.items()}
+        return func_metrics_elements
 
     def calc_reg_metrics(self):
         reg_metrics_elements = {}
@@ -174,7 +162,7 @@ class MetricsCalculator(dataflow_facade):
                 _, nest_cnt = self.walk_for_count_nest(bind.tree, count = 1)
                 reg_metrics_elements[str(getScope(tk)), i].set_nest_cnt(nest_cnt)
 
-        return { str(key):elements.calc_metrics()  for key, elements in reg_metrics_elements.items()}
+        return reg_metrics_elements
 
     def walk_for_count_branch(self, tree, count=0):
         """ [FUNCTIONS]
@@ -215,8 +203,55 @@ class MetricsCalculator(dataflow_facade):
                 for bvi in self.binddict[tk]:
                     module_metrics_elements[str(getScope(tk))].add_clk(bvi.getClockName())
                     module_metrics_elements[str(getScope(tk))].add_rst(bvi.getResetName())
-        return { str(module):elements.calc_metrics()  for module, elements in module_metrics_elements.items()}
+        return module_metrics_elements
 
+class metrics_profile(object):
+    def __init__(self, elements_dict, disp_limit=0):
+        def sort_by_metrics_score(input_dict):
+            return_dict = OrderedDict()
+            for key, value in reversed(sorted(input_dict.items(), key=lambda x:x[1])):
+                return_dict[key] = value
+            return return_dict
+
+        self.elements_dict = elements_dict
+        metrics_dict = { key:elements.calc_metrics()  for key, elements in self.elements_dict.items()}
+        self.m_ordered = sort_by_metrics_score(metrics_dict)
+        self.disp_limit = disp_limit
+        self.level = 'abstract'
+
+    def get_total_score(self):
+        return sum(self.m_ordered.values())
+
+    def show(self):
+        """ [FUNCTIONS]
+        Display metrics score.
+        If disp_limit = 0,all scores are displayed.
+        """
+        print('\n\n' + self.level + ' metrics total: ' + str(self.get_total_score()))
+        print('\neach score:')
+
+        cnt = 0
+        for key, value in self.m_ordered.items():
+            print(str(key) + ': ' + str(value))
+            self.elements_dict[key].show()
+            cnt += 1
+            if cnt == self.disp_limit:
+                break
+
+class module_profile(metrics_profile):
+    def __init__(self, elements_dict, disp_limit=0):
+        metrics_profile.__init__(self, elements_dict, disp_limit)
+        self.level = 'module'
+
+class reg_profile(metrics_profile):
+    def __init__(self, elements_dict, disp_limit=0):
+        metrics_profile.__init__(self, elements_dict, disp_limit)
+        self.level = 'register'
+
+class function_profile(metrics_profile):
+    def __init__(self, elements_dict, disp_limit=0):
+        metrics_profile.__init__(self, elements_dict, disp_limit)
+        self.level = 'function'
 
 class metrics_elements(object):
     def calc_metrics(self): pass
@@ -225,22 +260,35 @@ class reg_elements(metrics_elements):
     def __init__(self):
         self.if_nest_num = 0
         self.if_num = 0
-        self.var_num = 0
+
     def set_branch_cnt(self, branch_cnt):
         self.branch_cnt = branch_cnt
+
     def set_nest_cnt(self, nest_cnt):
         self.nest_cnt = nest_cnt
+
     def calc_metrics(self):
         return ((self.branch_cnt * self.coef_for_branch) ** self.pow_for_branch +
                 (self.nest_cnt * self.coef_for_nest) ** self.pow_for_nest)
 
+    def show(self):
+        print('Number of branch: ' + str(self.branch_cnt))
+        print('Max nest: ' + str(self.nest_cnt))
+
 class func_elements(reg_elements):
     def __init__(self):
         self.var_num = 0
+
     def set_var(self, var_num):
         self.var_num = var_num
+
     def calc_metrics(self):
         return (self.var_num * self.coef_for_var) ** self.pow_for_var + reg_elements.calc_metrics(self)
+
+    def show(self):
+        print('Number of branch: ' + str(self.branch_cnt))
+        print('Max nest: ' + str(self.nest_cnt))
+        print('Number of variables: ' + str(self.var_num))
 
 class module_elements(metrics_elements):
 
@@ -272,29 +320,17 @@ class module_elements(metrics_elements):
                 (len(self.clks) * self.coef_for_clk) ** self.pow_for_clk +
                 (len(self.rsts) * self.coef_for_rst) ** self.pow_for_rst)
 
-def display_metrics(metrics_dict, disp_limit=0):
-    """ [FUNCTIONS]
-    Display metrics score.
-    If disp_limit = 0,all scores are displayed.
-    """
-    for key, value in metrics_dict.items():
-        print(str(key) + ': ' + str(value))
+    def show(self):
+        print('Number of input ports: ' + str(self.input_num))
+        print('Number of output ports: ' + str(self.output_num))
+        print('Number of registers:  ' + str(self.reg_num))
+        print('Number of clocks: ' + str(len(self.clks)))
+        print('Number of resets:  ' + str(len(self.rsts)))
 
 if __name__ == '__main__':
     c_m = MetricsCalculator("../testcode/metrics_func.v")
-    m_metrics, r_metrics, f_metrics = c_m.calc_metrics()
+    m_metrics, r_metrics, f_metrics = c_m.synth_profile()
 
-    print('\nmodule metrics:')
-    print('total: ' + str(sum(m_metrics.values())))
-    print('each score:')
-    display_metrics(m_metrics, c_m.module_disp_limit)
-
-    print('\nregister metrics:')
-    print('total: ' + str(sum(r_metrics.values())))
-    print('each score:')
-    display_metrics(r_metrics, c_m.reg_disp_limit)
-
-    print('\nfunction metrics:')
-    print('total: ' + str(sum(f_metrics.values())))
-    print('each score:')
-    display_metrics(f_metrics, c_m.func_disp_limit)
+    m_metrics.show()
+    r_metrics.show()
+    f_metrics.show()

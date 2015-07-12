@@ -59,20 +59,32 @@ endmodule
 ```
 Output:
 ```
-module metrics:
-total: 19
+module metrics total: 19
+
 each score:
 TOP: 19
+Number of input ports: 4
+Number of output ports: 0
+Number of registers:  1
+Number of clocks: 1
+Number of resets:  1
 
-register metrics:
-total: 1
+
+register metrics total: 1
+
 each score:
 ('TOP', 0): 1
+Number of branch: 0
+Max nest: 1
 
-function metrics:
-total: 9
+
+function metrics total: 9
+
 each score:
 ('TOP.md_always0.al_block0.al_functioncall0', 0): 9
+Number of branch: 1
+Max nest: 2
+Number of variables: 2
 ```
 
 

@@ -29,22 +29,22 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_metrics(self):
         m_calculator = MetricsCalculator("metrics_test.v")
-        m_metrics, _, _ = m_calculator.calc_metrics()
-        self.assertEqual(m_metrics['TOP'], 27)
-        self.assertEqual(m_metrics['TOP.sub'], 19)
+        m_metrics, _, _ = m_calculator.synth_profile()
+        self.assertEqual(m_metrics.m_ordered['TOP'], 27)
+        self.assertEqual(m_metrics.m_ordered['TOP.sub'], 19)
 
     def test_metrics2(self):
         m_calculator = MetricsCalculator("metrics_test2.v")
-        m_metrics, r_metrics, _ = m_calculator.calc_metrics()
-        self.assertEqual(m_metrics['TOP'], 19)
-        self.assertEqual(r_metrics["('TOP', 0)"], 25)
+        m_metrics, r_metrics, _ = m_calculator.synth_profile()
+        self.assertEqual(m_metrics.m_ordered['TOP'], 19)
+        self.assertEqual(r_metrics.m_ordered[('TOP', 0)], 25)
 
     def test_metrics_func(self):
         m_calculator = MetricsCalculator("metrics_func.v")
-        m_metrics, r_metrics, f_metrics = m_calculator.calc_metrics()
-        self.assertEqual(m_metrics['TOP'], 19)
-        self.assertEqual(r_metrics["('TOP', 0)"], 1)
-        self.assertEqual(f_metrics["('TOP.md_always0.al_block0.al_functioncall0', 0)"], 9)
+        m_metrics, r_metrics, f_metrics = m_calculator.synth_profile()
+        self.assertEqual(m_metrics.m_ordered['TOP'], 19)
+        self.assertEqual(r_metrics.m_ordered[('TOP', 0)], 1)
+        self.assertEqual(f_metrics.m_ordered[('TOP.md_always0.al_block0.al_functioncall0', 0)], 9)
 
     def test_reg_clone(self):
         cc_finder = CodeCloneFinder("reg_clone.v")
