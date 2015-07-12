@@ -25,6 +25,9 @@ class RegMapAnalyzer(dataflow_facade):
     def __init__(self, code_file_name, setup_file, out_file='out.csv'):
         dataflow_facade.__init__(self, code_file_name)
         self.out_file_name = out_file
+
+        if hasattr(self, 'config_file'):
+            setup_file = self.config_file
         self.reg_control = MapFactory(setup_file)
 
     def getRegMaps(self):

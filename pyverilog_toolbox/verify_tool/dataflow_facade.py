@@ -44,8 +44,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
                              default=[],help="Include path")
         optparser.add_option("-D",dest="define",action="append",
                              default=[],help="Macro Definition")
-        optparser.add_option("-S",dest="regmap_config",
-                             default=[],help="regmap config")
+        optparser.add_option("-S",dest="config_file",default=[],help="config_file")
 
         (options, args) = optparser.parse_args()
 
@@ -72,6 +71,8 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         resolved_terms = optimizer.getResolvedTerms()
         resolved_binddict = optimizer.getResolvedBinddict()
         constlist = optimizer.getConstlist()
+        if options.config_file:
+            self.config_file = options.config_file
         return options.topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist
 
     def make_term_ref_dict(self):
