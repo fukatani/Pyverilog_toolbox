@@ -44,7 +44,7 @@ class TestSequenceFunctions(unittest.TestCase):
         m_metrics, r_metrics, f_metrics = m_calculator.calc_metrics()
         self.assertEqual(m_metrics['TOP'], 19)
         self.assertEqual(r_metrics["('TOP', 0)"], 1)
-        self.assertEqual(f_metrics["('TOP.md_always0.al_block0.al_functioncall0', 0)"], 4)
+        self.assertEqual(f_metrics["('TOP.md_always0.al_block0.al_functioncall0', 0)"], 9)
 
     def test_reg_clone(self):
         cc_finder = CodeCloneFinder("reg_clone.v")

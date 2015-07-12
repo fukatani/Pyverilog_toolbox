@@ -9,7 +9,7 @@
 import sys
 import os
 import copy
-import collections
+from collections import OrderedDict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
@@ -57,11 +57,24 @@ class MetricsCalculator(dataflow_facade):
     def calc_metrics(self):
         """[FUNCTIONS]
         Calculating verilog code metrics.
+        Each metrics is returned as Dict(Order by metrics).
         """
+        def sort_by_metrics_score(input_dict):
+            return_dict = OrderedDict()
+            for key, value in reversed(sorted(input_dict.items(), key=lambda x:x[1])):
+                return_dict[key] = value
+            return return_dict
+
         f_metrics_dict = self.calc_function_metrics()
+        f_m_ordered = sort_by_metrics_score(f_metrics_dict)
+
         r_metrics_dict = self.calc_reg_metrics()
+        r_m_ordered = sort_by_metrics_score(r_metrics_dict)
+
         m_metrics_dict = self.calc_module_metrics()
-        return m_metrics_dict, r_metrics_dict, f_metrics_dict
+        m_m_ordered = sort_by_metrics_score(m_metrics_dict)
+
+        return m_m_ordered, r_m_ordered, f_m_ordered
 
     def calc_function_metrics(self):
         func_metrics_elements = {}
@@ -72,6 +85,12 @@ class MetricsCalculator(dataflow_facade):
                 if len(trees) > 1: # omit 1 variable function
                     func_metrics_elements[str(getScope(tk)), i] = func_elements()
                     func_metrics_elements[str(getScope(tk)), i].set_var(len(trees))
+
+                    branch_cnt = self.walk_for_count_branch(bind.tree)
+                    func_metrics_elements[str(getScope(tk)), i].set_branch_cnt(branch_cnt)
+
+                    _, nest_cnt = self.walk_for_count_nest(bind.tree, count = 1)
+                    func_metrics_elements[str(getScope(tk)), i].set_nest_cnt(nest_cnt)
         return { str(key):elements.calc_metrics()  for key, elements in func_metrics_elements.items()}
 
     def calc_reg_metrics(self):
@@ -136,14 +155,6 @@ class MetricsCalculator(dataflow_facade):
 class metrics_elements(object):
     def calc_metrics(self): pass
 
-class func_elements(metrics_elements):
-    def __init__(self):
-        self.var_num = 0
-    def set_var(self, var_num):
-        self.var_num = var_num
-    def calc_metrics(self):
-        return (self.var_num * self.coef_for_var) ** self.pow_for_var
-
 class reg_elements(metrics_elements):
     def __init__(self):
         self.if_nest_num = 0
@@ -157,7 +168,15 @@ class reg_elements(metrics_elements):
         return ((self.branch_cnt * self.coef_for_branch) ** self.pow_for_branch +
                 (self.nest_cnt * self.coef_for_nest) ** self.pow_for_nest)
 
-class module_elements(object):
+class func_elements(reg_elements):
+    def __init__(self):
+        self.var_num = 0
+    def set_var(self, var_num):
+        self.var_num = var_num
+    def calc_metrics(self):
+        return (self.var_num * self.coef_for_var) ** self.pow_for_var + reg_elements.calc_metrics(self)
+
+class module_elements(metrics_elements):
 
     def __init__(self):
         self.input_num = 0
@@ -187,12 +206,16 @@ class module_elements(object):
                 (len(self.clks) * self.coef_for_clk) ** self.pow_for_clk +
                 (len(self.rsts) * self.coef_for_rst) ** self.pow_for_rst)
 
-def display_metrics(metrics_dict):
+def display_metrics(metrics_dict, disp_limit=0):
+    """ [FUNCTIONS]
+    Display metrics score.
+    If disp_limit = 0,all scores are displayed.
+    """
     for key, value in metrics_dict.items():
         print str(key) + ': ' + str(value)
 
 if __name__ == '__main__':
-    c_m = MetricsCalculator("../testcode/metrics_func.v")
+    c_m = MetricsCalculator("../testcode/metrics_test.v")
     m_metrics, r_metrics, f_metrics = c_m.calc_metrics()
     display_metrics(m_metrics)
     display_metrics(r_metrics)

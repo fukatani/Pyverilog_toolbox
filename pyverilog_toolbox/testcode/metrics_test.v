@@ -21,6 +21,7 @@ module TOP(CLK, RST, IN, IN2, reg1, OUT);
   end
 
   SUB sub(CLK,RST,in1,OUT);
+  SUB2 ccc(CLK,RST,in1);
 
   function func1;
     input bit;
@@ -47,3 +48,20 @@ module SUB(CLK,RST,IN, OUT);
   end
 
 endmodule
+
+module SUB2(CLK,RST,IN);
+  input CLK, RST, IN;
+  reg reg1;
+
+  always @(posedge CLK or negedge RST) begin
+    if(RST) begin
+      reg1 <= 1'b0;
+    end else if(IN) begin
+      reg1 <= 1'b0;
+    end else begin
+      reg1 <= 1'b1;
+    end
+  end
+
+endmodule
+
