@@ -70,55 +70,55 @@ class MetricsCalculator(dataflow_facade):
             for readline in setup_file:
                 if readline[0] == '#': continue
                 words = readline.split(':')
-                if len(word_list) == 2:
+                if len(words) == 2:
                     #config parameters for module metrics
                     if words[0] == 'COEF_FOR_INPUT':
-                        module_elements.coef_for_input = words[1]
+                        module_elements.coef_for_input = int(words[1])
                     if words[0] == 'POW_FOR_INPUT':
-                        module_elements.pow_for_input = words[1]
+                        module_elements.pow_for_input = int(words[1])
                     if words[0] == 'COEF_FOR_OUTPUT':
-                        module_elements.coef_for_output = words[1]
+                        module_elements.coef_for_output = int(words[1])
                     if words[0] == 'POW_FOR_OUTPUT':
-                        module_elements.pow_for_output = words[1]
+                        module_elements.pow_for_output = int(words[1])
                     if words[0] == 'COEF_FOR_REG':
-                        module_elements.coef_for_reg = words[1]
+                        module_elements.coef_for_reg = int(words[1])
                     if words[0] == 'POW_FOR_REG':
-                        module_elements.pow_for_reg = words[1]
+                        module_elements.pow_for_reg = int(words[1])
                     if words[0] == 'COEF_FOR_CLK':
-                        module_elements.coef_for_clk = words[1]
+                        module_elements.coef_for_clk = int(words[1])
                     if words[0] == 'POW_FOR_CLK':
-                        module_elements.pow_for_clk = words[1]
+                        module_elements.pow_for_clk = int(words[1])
                     if words[0] == 'COEF_FOR_RST':
-                        module_elements.coef_for_rst = words[1]
+                        module_elements.coef_for_rst = int(words[1])
                     if words[0] == 'POW_FOR_RST':
-                        module_elements.pow_for_rst = words[1]
+                        module_elements.pow_for_rst = int(words[1])
 
                     #config parameters for module metrics
                     if words[0] == 'COEF_FOR_BRANCH':
-                        reg_elements.coef_for_branch = words[1]
+                        reg_elements.coef_for_branch = int(words[1])
                     if words[0] == 'POW_FOR_BRANCH':
-                        reg_elements.pow_for_branch = words[1]
+                        reg_elements.pow_for_branch = int(words[1])
                     if words[0] == 'COEF_FOR_NEST':
-                        reg_elements.coef_for_nest = words[1]
+                        reg_elements.coef_for_nest = int(words[1])
                     if words[0] == 'POW_FOR_NEST':
-                        reg_elements.pow_for_nest = words[1]
+                        reg_elements.pow_for_nest = int(words[1])
 
                     #config parameters for function metrics
                     if words[0] == 'COEF_FOR_VAR':
-                        func_elements.coef_for_var = words[1]
+                        func_elements.coef_for_var = int(words[1])
                     if words[0] == 'NEST_FOR_VAR':
-                        func_elements.pow_for_var = words[1]
+                        func_elements.pow_for_var = int(words[1])
 
                     #config parameters for display
                     if words[0] == 'MODULE_DISP_LIMIT':
-                        self.module_disp_limit = words[1]
+                        self.module_disp_limit = int(words[1])
                     if words[0] == 'REG_DISP_LIMIT':
-                        self.reg_disp_limit = words[1]
+                        self.reg_disp_limit = int(words[1])
                     if words[0] == 'FUNC_DISP_LIMIT':
-                        self.func_disp_limit = words[1]
+                        self.func_disp_limit = int(words[1])
             setup_file.close()
         except IOError:
-            print(file_name + " can't open for read.")
+            print(self.config_file + " can't open for read.")
 
     def calc_metrics(self):
         """[FUNCTIONS]
@@ -281,7 +281,7 @@ def display_metrics(metrics_dict, disp_limit=0):
         print(str(key) + ': ' + str(value))
 
 if __name__ == '__main__':
-    c_m = MetricsCalculator("../testcode/metrics_test.v")
+    c_m = MetricsCalculator("../testcode/metrics_func.v")
     m_metrics, r_metrics, f_metrics = c_m.calc_metrics()
 
     print('\nmodule metrics:')
