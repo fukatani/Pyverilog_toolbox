@@ -1,9 +1,7 @@
 Introduction
 ==============================
-Pyverilog_toolbox is Pyverilog-based verification/design tool.
-
-Accerating your digital circuit design verification.
-
+Pyverilog_toolbox is Pyverilog-based verification/design tool including code clone finder, metrics calculator and so on.
+Pyverilog_toolbox accerating your digital circuit design verification.
 Thanks to Pyverilog developer shtaxxx.
 
 
@@ -11,6 +9,7 @@ Software Requirements
 ==============================
 * Python (2.7)
 * Pyverilog (you can download from https://github.com/shtaxxx/Pyverilog)
+Pyverilog requires Icarus verilog
 
 
 Installation
@@ -32,7 +31,7 @@ pip install pyverilog_toolbox
 Python 3.x is not tried by author.
 
 
-Tools
+Features
 ==============================
 
 ## codeclone_finder
@@ -49,6 +48,7 @@ Combinational logic loop is sticky problem, but you can find it by combloop_find
 
 
 ## unreferenced_finder
+
 Unreferenced_finder can find signals which isn't referenced by any signals.
 By using this, you can delte unnecessary codes.
 
@@ -64,7 +64,6 @@ You can visualize complecity of module/register/function/.
 ## regmap_analyzer
 
 regmap_analyzer can analyze register map structure from RTL.
-After install Pyverilog_toolbox, you can use regmap analyzer by this command.
 
 [Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/regmap.md "regmap_analyzer")
 

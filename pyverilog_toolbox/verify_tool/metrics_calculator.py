@@ -222,12 +222,19 @@ class metrics_profile(object):
     def get_total_score(self):
         return sum(self.m_ordered.values())
 
+    def get_average_score(self):
+        if self.m_ordered:
+            return self.get_total_score() / len(self.m_ordered.values())
+        else:
+            return 0
+
     def show(self):
         """ [FUNCTIONS]
         Display metrics score.
         If disp_limit = 0,all scores are displayed.
         """
-        print('\n\n' + self.level + ' metrics total: ' + str(self.get_total_score()))
+        print('\n\n' + self.level + ' metrics\ntotal: ' + str(self.get_total_score()))
+        print('average: ' + str(self.get_average_score()))
         print('\neach score:')
 
         cnt = 0

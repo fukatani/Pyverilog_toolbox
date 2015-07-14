@@ -67,7 +67,9 @@ endmodule
 ```
 Output:
 ```
-module metrics total: 19
+module metrics
+total: 19
+average: 19
 
 each score:
 TOP: 19
@@ -78,7 +80,9 @@ Number of clocks: 1
 Number of resets:  1
 
 
-register metrics total: 1
+register metrics
+total: 1
+average: 1
 
 each score:
 ('TOP', 0): 1
@@ -86,7 +90,9 @@ Number of branch: 0
 Max nest: 1
 
 
-function metrics total: 9
+function metrics
+total: 9
+average: 9
 
 each score:
 ('TOP.md_always0.al_block0.al_functioncall0', 0): 9

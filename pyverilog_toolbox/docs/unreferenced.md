@@ -63,3 +63,4 @@ Output:
 finded unreferenced variables: ['TOP.reg2', 'TOP.IN2', 'TOP.reg3', 'TOP.sub.IN']
 ```
 
+You can delete these variables from design.
