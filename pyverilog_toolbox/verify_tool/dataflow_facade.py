@@ -51,7 +51,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         if args:
             filelist = args
         else:
-            filelist = {code_file_name}
+            filelist = (code_file_name,)
 
         for f in filelist:
             if not os.path.exists(f): raise IOError("file not found: " + f)
