@@ -40,6 +40,10 @@ class BindLibrary(object):
         self.gnb_cache = {}
 
     def dfx_memoize(f):
+        """ [FUNCTIONS]
+        Memoize for extract_all_dfxxx.
+        Using self.cache.
+        """
         def helper(self, target_tree, tree_list, bit, dftype):
             if dftype == pyverilog.dataflow.dataflow.DFTerminal:
                 if (target_tree,bit) not in self.cache:

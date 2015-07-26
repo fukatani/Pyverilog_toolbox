@@ -74,47 +74,47 @@ class MetricsCalculator(dataflow_facade):
                     #config parameters for module metrics
                     if words[0] == 'COEF_FOR_INPUT':
                         module_elements.coef_for_input = int(words[1])
-                    if words[0] == 'POW_FOR_INPUT':
+                    elif words[0] == 'POW_FOR_INPUT':
                         module_elements.pow_for_input = int(words[1])
-                    if words[0] == 'COEF_FOR_OUTPUT':
+                    elif words[0] == 'COEF_FOR_OUTPUT':
                         module_elements.coef_for_output = int(words[1])
-                    if words[0] == 'POW_FOR_OUTPUT':
+                    elif words[0] == 'POW_FOR_OUTPUT':
                         module_elements.pow_for_output = int(words[1])
-                    if words[0] == 'COEF_FOR_REG':
+                    elif words[0] == 'COEF_FOR_REG':
                         module_elements.coef_for_reg = int(words[1])
-                    if words[0] == 'POW_FOR_REG':
+                    elif words[0] == 'POW_FOR_REG':
                         module_elements.pow_for_reg = int(words[1])
-                    if words[0] == 'COEF_FOR_CLK':
+                    elif words[0] == 'COEF_FOR_CLK':
                         module_elements.coef_for_clk = int(words[1])
-                    if words[0] == 'POW_FOR_CLK':
+                    elif words[0] == 'POW_FOR_CLK':
                         module_elements.pow_for_clk = int(words[1])
-                    if words[0] == 'COEF_FOR_RST':
+                    elif words[0] == 'COEF_FOR_RST':
                         module_elements.coef_for_rst = int(words[1])
-                    if words[0] == 'POW_FOR_RST':
+                    elif words[0] == 'POW_FOR_RST':
                         module_elements.pow_for_rst = int(words[1])
 
                     #config parameters for module metrics
-                    if words[0] == 'COEF_FOR_BRANCH':
+                    elif words[0] == 'COEF_FOR_BRANCH':
                         reg_elements.coef_for_branch = int(words[1])
-                    if words[0] == 'POW_FOR_BRANCH':
+                    elif words[0] == 'POW_FOR_BRANCH':
                         reg_elements.pow_for_branch = int(words[1])
-                    if words[0] == 'COEF_FOR_NEST':
+                    elif words[0] == 'COEF_FOR_NEST':
                         reg_elements.coef_for_nest = int(words[1])
-                    if words[0] == 'POW_FOR_NEST':
+                    elif words[0] == 'POW_FOR_NEST':
                         reg_elements.pow_for_nest = int(words[1])
 
                     #config parameters for function metrics
-                    if words[0] == 'COEF_FOR_VAR':
+                    elif words[0] == 'COEF_FOR_VAR':
                         func_elements.coef_for_var = int(words[1])
-                    if words[0] == 'NEST_FOR_VAR':
+                    elif words[0] == 'NEST_FOR_VAR':
                         func_elements.pow_for_var = int(words[1])
 
                     #config parameters for display
-                    if words[0] == 'MODULE_DISP_LIMIT':
+                    elif words[0] == 'MODULE_DISP_LIMIT':
                         self.module_disp_limit = int(words[1])
-                    if words[0] == 'REG_DISP_LIMIT':
+                    elif words[0] == 'REG_DISP_LIMIT':
                         self.reg_disp_limit = int(words[1])
-                    if words[0] == 'FUNC_DISP_LIMIT':
+                    elif words[0] == 'FUNC_DISP_LIMIT':
                         self.func_disp_limit = int(words[1])
             setup_file.close()
         except IOError:
@@ -166,7 +166,7 @@ class MetricsCalculator(dataflow_facade):
 
     def walk_for_count_branch(self, tree, count=0):
         """ [FUNCTIONS]
-        Count up if/else/case branches number.
+        Count up if/else/case branches number for register/function metrics.
         """
         if isinstance(tree, pyverilog.dataflow.dataflow.DFBranch):
             count += 1
@@ -176,7 +176,7 @@ class MetricsCalculator(dataflow_facade):
 
     def walk_for_count_nest(self, tree, count=0, max_count=0):
         """ [FUNCTIONS]
-        Count up depth of if/else/case nest.
+        Count up depth of if/else/case nest for register/function metrics.
         """
         if isinstance(tree, pyverilog.dataflow.dataflow.DFBranch):
             count += 1
@@ -206,6 +206,10 @@ class MetricsCalculator(dataflow_facade):
         return module_metrics_elements
 
 class metrics_profile(object):
+    """ [CLASSES]
+    Abstract metrics profile for one RTL design.
+    This class will be inherited by module/register/function profile.
+    """
     def __init__(self, elements_dict, disp_limit=0):
         def sort_by_metrics_score(input_dict):
             return_dict = OrderedDict()
@@ -264,6 +268,9 @@ class metrics_elements(object):
     def calc_metrics(self): pass
 
 class reg_elements(metrics_elements):
+    """ [CLASSES]
+    Elements for calculating one register metrics.
+    """
     def __init__(self):
         self.if_nest_num = 0
         self.if_num = 0
@@ -283,6 +290,9 @@ class reg_elements(metrics_elements):
         print('Max nest: ' + str(self.nest_cnt))
 
 class func_elements(reg_elements):
+    """ [CLASSES]
+    Elements for calculating one function metrics.
+    """
     def __init__(self):
         self.var_num = 0
 
@@ -298,7 +308,9 @@ class func_elements(reg_elements):
         print('Number of variables: ' + str(self.var_num))
 
 class module_elements(metrics_elements):
-
+    """ [CLASSES]
+    Elements for calculating one module metrics.
+    """
     def __init__(self):
         self.input_num = 0
         self.output_num = 0
