@@ -29,13 +29,13 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         You can get dataflow by dataflow_facade(Verilog file name).
         If commandline option exists, first argument is regard as verilog file name.
     """
-    def __init__(self, code_file_name):
+    def __init__(self, code_file_name, topmodule='', config_file=None):
         topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist = self.get_dataflow(code_file_name)
         VerilogControlflowAnalyzer.__init__(self, topmodule, terms, binddict,
         resolved_terms, resolved_binddict,constlist)
         self.binds = BindLibrary(binddict, terms)
 
-    def get_dataflow(self, code_file_name):
+    def get_dataflow(self, code_file_name, topmodule='', config_file=None):
         optparser = OptionParser()
         optparser.add_option("-t","--top",dest="topmodule",
                              default="TOP",help="Top module, Default=TOP")
@@ -50,13 +50,21 @@ class dataflow_facade(VerilogControlflowAnalyzer):
 
         if args:
             filelist = args
+        elif code_file_name:
+            if hasattr(code_file_name, "__iter__"):
+                filelist = code_file_name
+            else:
+                filelist = (code_file_name,)
         else:
-            filelist = (code_file_name,)
+            raise Exception("Verilog file is not assigned.")
 
         for f in filelist:
             if not os.path.exists(f): raise IOError("file not found: " + f)
 
-        analyzer = VerilogDataflowAnalyzer(filelist, options.topmodule,
+        if not topmodule:
+            topmodule = options.topmodule
+
+        analyzer = VerilogDataflowAnalyzer(filelist, topmodule,
                                            preprocess_include=options.include,
                                            preprocess_define=options.define)
         analyzer.generate()
@@ -71,7 +79,9 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         resolved_terms = optimizer.getResolvedTerms()
         resolved_binddict = optimizer.getResolvedBinddict()
         constlist = optimizer.getConstlist()
-        if options.config_file:
+        if config_file:
+            self.config_file = config_file
+        elif options.config_file:
             self.config_file = options.config_file
         return options.topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist
 
