@@ -48,9 +48,8 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_reg_clone(self):
         cc_finder = CodeCloneFinder("reg_clone.v")
-        cc_finder.search_regclone()
-        self.assertEqual(str(cc_finder.search_regclone()),
-                        '[((TOP.reg3, 0), (TOP.sub.reg1, 0)), ((TOP.sub.reg1, 0), (TOP.reg1, 0))]')
+        self.assertEqual(set([str(reg) for reg in cc_finder.search_regclone()]),
+                        set(['((TOP.sub.reg1, 0), (TOP.reg1, 0))', '((TOP.reg3, 0), (TOP.sub.reg1, 0))']))
         inv_reg_description = set([str(inv_pair) for inv_pair in cc_finder.search_invert_regs()])
         ok1 = ('((TOP.reg1, 0), (TOP.reg4, 0))' in inv_reg_description) or ('((TOP.reg4, 0), (TOP.reg1, 0))' in inv_reg_description)
         ok2 = ('((TOP.reg3, 0), (TOP.reg4, 0))' in inv_reg_description) or ('((TOP.reg4, 0), (TOP.reg3, 0))' in inv_reg_description)
@@ -59,8 +58,8 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_unreferenced(self):
         u_finder = UnreferencedFinder("unreferenced_variables.v")
-        self.assertEqual(str(u_finder.search_unreferenced()),
-                        '[\'TOP.reg2\', \'TOP.IN2\', \'TOP.reg3\', \'TOP.sub.IN\']')
+        self.assertEqual(str(sorted(u_finder.search_unreferenced())),
+                        '[\'TOP.IN2\', \'TOP.reg2\', \'TOP.reg3\', \'TOP.sub.IN\']')
 
     def test_cnt_analyzer(self):
         c_analyzer = CntAnalyzer("norm_cnt2.v")
@@ -91,11 +90,12 @@ class TestSequenceFunctions(unittest.TestCase):
                         "{1: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1), 2: ('TOP.reg1', 0), 3: ('TOP.reg1', 1)}}")
         self.assertEqual(str(read_map.map),
                         "{1: {0: ('TOP.reg0', 0), 1: ('TOP.reg0', 1), 2: ('TOP.reg1', 0), 3: ('TOP.reg1', 1)}}")
+
     def test_partselect(self):
         df = dataflow_facade("complex_partselect.v")
-        self.assertEqual(df.print_bind_info(),
-                        'TOP.reg0[3]: set([(TOP.reg0, 3), (TOP.WRITE, 0), (TOP.WRITE_DATA, 1)])' +
-                        'TOP.reg0[4]: set([(TOP.reg0, 4), (TOP.WRITE_DATA, 2), (TOP.WRITE, 0)])')
+        term_dict = df.make_extract_dfterm_dict()
+        self.assertEqual(term_dict[('TOP.reg0', 3)], set(['(TOP.WRITE_DATA, 1)', '(TOP.WRITE, 0)', '(TOP.reg0, 3)']))
+        self.assertEqual(term_dict[('TOP.reg0', 4)], set(['(TOP.WRITE_DATA, 2)', '(TOP.WRITE, 0)', '(TOP.reg0, 4)']))
 
     def test_split2(self):
         ranalyzer = RegMapAnalyzer("regmap2.v", "setup.txt")
