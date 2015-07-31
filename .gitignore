@@ -13,5 +13,5 @@ build/
 dist/
 pyverilog_toolbox.egg-info/
 *.bat
-pyverilog_toolbox/gui/wxpython.py
-pyverilog_toolbox/gui/
+
+*.html

@@ -24,7 +24,7 @@ import pyverilog.controlflow.splitter as splitter
 
 class MetricsCalculator(dataflow_facade):
 
-    def __init__(self, code_file_name, parameter_file='', result_file='metrics.log'):
+    def __init__(self, code_file_name, topmodule='TOP', parameter_file='', result_file='metrics.log'):
         """[FUNCTIONS]
         code_file_name: calculation target(verilog file)
         parameter_file: metrics calculation parameter file
@@ -205,6 +205,27 @@ class MetricsCalculator(dataflow_facade):
                     module_metrics_elements[str(getScope(tk))].add_rst(bvi.getResetName())
         return module_metrics_elements
 
+    def decorate_html(html_name):
+        temp_html = open('temp.html', 'r')
+        out_html = open(html_name, 'w')
+        for line in temp_html:
+            if 'Module metrics\n' == line or 'Register metrics\n' == line or 'Function metrics\n' == line:
+                out_html.write('<Hr Color="#fe81df">' + '<font size="5">' + line + '</font>' + '<br>' + '<br>')
+            elif '(twice larger than average)' in line:
+                out_html.write('<font color="#ff0000">' + line + '</font>' + '<br>')
+            else:
+                out_html.write(line + '<br>')
+        temp_html.close()
+        out_html.close()
+
+    @out_as_html(decorate_html)
+    def show(self):
+        if not hasattr(self, 'm_profile'):
+            raise Exception('This function must be called after synthesize profile.')
+        self.m_profile.show()
+        self.r_profile.show()
+        self.f_profile.show()
+
 class metrics_profile(object):
     """ [CLASSES]
     Abstract metrics profile for one RTL design.
@@ -237,13 +258,17 @@ class metrics_profile(object):
         Display metrics score.
         If disp_limit = 0,all scores are displayed.
         """
-        print('\n\n' + self.level + ' metrics\ntotal: ' + str(self.get_total_score()))
-        print('average: ' + str(self.get_average_score()))
-        print('\neach score:')
+        print('\n\n' + self.level + ' metrics\nTotal: ' + str(self.get_total_score()))
+        print('Average: ' + str(self.get_average_score()))
+        print('\nEach score:')
 
         cnt = 0
         for key, value in self.m_ordered.items():
-            print(str(key) + ': ' + str(value))
+            print(self.level + ':' + str(key))
+            if value > 2 * self.get_average_score():
+                print('total: ' + str(value) + '(twice larger than average)')
+            else:
+                print('total: ' + str(value))
             self.elements_dict[key].show()
             cnt += 1
             if cnt == self.disp_limit:
@@ -252,17 +277,17 @@ class metrics_profile(object):
 class module_profile(metrics_profile):
     def __init__(self, elements_dict, disp_limit=0):
         metrics_profile.__init__(self, elements_dict, disp_limit)
-        self.level = 'module'
+        self.level = 'Module'
 
 class reg_profile(metrics_profile):
     def __init__(self, elements_dict, disp_limit=0):
         metrics_profile.__init__(self, elements_dict, disp_limit)
-        self.level = 'register'
+        self.level = 'Register'
 
 class function_profile(metrics_profile):
     def __init__(self, elements_dict, disp_limit=0):
         metrics_profile.__init__(self, elements_dict, disp_limit)
-        self.level = 'function'
+        self.level = 'Function'
 
 class metrics_elements(object):
     def calc_metrics(self): pass
@@ -348,8 +373,7 @@ class module_elements(metrics_elements):
 
 if __name__ == '__main__':
     c_m = MetricsCalculator("../testcode/metrics_func.v")
-    m_metrics, r_metrics, f_metrics = c_m.synth_profile()
+    c_m.synth_profile()
+    #c_m.html_name='log.html'
+    c_m.show()
 
-    m_metrics.show()
-    r_metrics.show()
-    f_metrics.show()

@@ -23,6 +23,22 @@ from pyverilog.dataflow.optimizer import VerilogDataflowOptimizer
 from bindlibrary import BindLibrary
 from pyverilog.controlflow.controlflow_analyzer import VerilogControlflowAnalyzer
 
+def out_as_html(html_deco):
+    def _helper(out_func):
+        def __helper(self):
+            if hasattr(self, 'html_name'):
+                temp_sysout = sys.stdout
+                sys.stdout = open('temp.html', 'w')
+                return_val = out_func(self)
+                sys.stdout.close()
+                sys.stdout = temp_sysout
+                html_deco(self.html_name)
+            else:
+                return_val = out_func(self)
+            return return_val
+        return __helper
+    return _helper
+
 class dataflow_facade(VerilogControlflowAnalyzer):
     """ [CLASSES]
         Facade pattern for getting dataflow.
@@ -107,10 +123,22 @@ class dataflow_facade(VerilogControlflowAnalyzer):
             tree = self.makeTree(tk)
             trees = binds.extract_all_dfxxx(tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
             return_dict[(str(tk), bit)] = set([str(tree) for tree in trees])
-            #print str(tk) + '[' + str(bit) + ']: ' + str(trees)
-            #return_str += str(tk) + '[' + str(bit) + ']: ' + str(trees)
         return return_dict
 
+    def decorate_html(html_name):
+        temp_html = open('temp.html', 'r')
+        out_html = open(html_name, 'w')
+        for line in temp_html:
+            if 'Term:\n' in line:
+                out_html.write('<font size="5">' + line + '</font>' + '<br>')
+            elif 'Bind:\n' in line:
+                out_html.write('<Hr Color="#fe81df">' + '<font size="5">' + line + '</font>' + '<br>')
+            else:
+                out_html.write(line + '<br>')
+        temp_html.close()
+        out_html.close()
+
+    @out_as_html(decorate_html)
     def print_dataflow(self):
         """[FUNCTIONS]
         print dataflow information.
@@ -127,6 +155,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
             for bvi in bv:
                 print(bvi.tostr())
 
+    @out_as_html(decorate_html)
     def print_controlflow(self):
         """[FUNCTIONS]
         print controlflow information.
@@ -146,7 +175,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
                 print(loop)
 
 if __name__ == '__main__':
-    #df = dataflow_facade("../testcode/complex_partselect.v")
-    df = dataflow_facade("../testcode/regmap2.v")
+    df = dataflow_facade("../testcode/complex_partselect.v")
+    df.html_name='log.html'
     df.print_dataflow()
-    df.print_controlflow()
+    #df.print_controlflow()

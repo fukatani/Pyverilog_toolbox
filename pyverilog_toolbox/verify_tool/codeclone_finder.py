@@ -121,9 +121,22 @@ class CodeCloneFinder(dataflow_facade):
             print('There isn\'t invert reg pair.')
         return invert_regs
 
-if __name__ == '__main__':
-    codeclone_finder = CodeCloneFinder("../testcode/reg_clone.v")
-    codeclone_finder.search_invert_regs()
-    codeclone_finder.search_regclone()
+    def decorate_html(html_name):
+        temp_html = open('temp.html', 'r')
+        out_html = open(html_name, 'w')
+        for line in temp_html:
+            line = line.replace(')),', ')),<br>')
+            line = line.replace('Clone reg pairs:', '<font size="5">' + 'Clone reg pairs:' + '</font>' + '<br>')
+            line = line.replace('Invert reg pairs:', '<Hr>' + '<font size="5">' + 'Invert reg pairs:' + '</font>' + '<br>')
+            out_html.write(line + '<br>')
+        temp_html.close()
+        out_html.close()
 
+    @out_as_html(decorate_html)
+    def show(self):
+        self.search_regclone()
+        self.search_invert_regs()
+
+if __name__ == '__main__':
+    CodeCloneFinder("../testcode/reg_clone.v").show()
 

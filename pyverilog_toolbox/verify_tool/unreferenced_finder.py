@@ -24,6 +24,15 @@ import pyverilog.controlflow.splitter as splitter
 
 class UnreferencedFinder(dataflow_facade):
 
+    def decorate_html(html_name):
+        temp_html = open('temp.html', 'r')
+        out_html = open(html_name, 'w')
+        for line in temp_html:
+            out_html.write(line + '<br>')
+        temp_html.close()
+        out_html.close()
+
+    @out_as_html(decorate_html)
     def search_unreferenced(self):
         """[FUNCTIONS]
         search input/reg/wire which not referenced any other output/reg/wire.
@@ -42,7 +51,10 @@ class UnreferencedFinder(dataflow_facade):
             for tree, bit in trees:
                 if str(tree) in signals:
                     signals.remove(str(tree))
-        print "finded unreferenced variables: " + str(signals)
+        if signals:
+            print("finded unreferenced variables: " + str(signals))
+        else:
+            print("There isn't unreferenced variables.")
         return signals
 
 if __name__ == '__main__':

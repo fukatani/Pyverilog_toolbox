@@ -122,5 +122,10 @@ class TestSequenceFunctions(unittest.TestCase):
         with self.assertRaises(CombLoopException):
             c_finder.search_combloop()
 
+    def test_comb_loop4(self):
+        c_finder = CombLoopFinder("combloop4.v")
+        with self.assertRaises(CombLoopException):
+            c_finder.search_combloop()
+
 if __name__ == '__main__':
     unittest.main()
