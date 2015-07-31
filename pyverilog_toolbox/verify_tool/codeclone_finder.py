@@ -60,7 +60,8 @@ class CodeCloneFinder(dataflow_facade):
                 clone_regs.append((cd_order.keys()[cnt], cd_order.keys()[cnt + 1]))
 
         if clone_regs:
-            print('Clone reg pairs: '+ str(clone_regs))
+            print('Clone reg pairs:')
+            self.deploy_reg_info(clone_regs)
         else:
             print('There isn\'t clone reg pair.')
         return clone_regs
@@ -116,16 +117,20 @@ class CodeCloneFinder(dataflow_facade):
                 if judge_invert_reg(ft_order.values()[cnt].values(), ft_order.values()[target_cnt].values()):
                     invert_regs.append((ft_order.keys()[cnt], ft_order.keys()[target_cnt]))
         if invert_regs:
-            print('Invert reg pairs: '+ str(invert_regs))
+            print('Invert reg pairs:')
+            self.deploy_reg_info(invert_regs)
         else:
             print('There isn\'t invert reg pair.')
         return invert_regs
+
+    def deploy_reg_info(self, regs):
+        for reg in regs:
+            print(str(reg[0][0]) + '[' + str(reg[0][1]) + '] and ' + str(reg[1][0]) + '[' + str(reg[1][1]) + ']')
 
     def decorate_html(html_name):
         temp_html = open('temp.html', 'r')
         out_html = open(html_name, 'w')
         for line in temp_html:
-            line = line.replace(')),', ')),<br>')
             line = line.replace('Clone reg pairs:', '<font size="5">' + 'Clone reg pairs:' + '</font>' + '<br>')
             line = line.replace('Invert reg pairs:', '<Hr>' + '<font size="5">' + 'Invert reg pairs:' + '</font>' + '<br>')
             out_html.write(line + '<br>')
