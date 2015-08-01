@@ -47,7 +47,11 @@ class CntAnalyzer(dataflow_facade):
             load_const_dict = self.filter(funcdict, self.active_load_const)
             load_const_dict = {conds[-1] : eval_value(value) for conds, value in load_const_dict.items()}
             new_counter.set_load_const_cond(load_const_dict)
-            new_counter.set_max_load_const(max(load_const_dict.values()))
+
+            if load_const_dict:
+                new_counter.set_max_load_const(max(load_const_dict.values()))
+##            else: #free run counter
+##                new_counter.set_max_load_const(2 ** new_counter.msb - 1)
             new_counter.make_load_dict(self.binds)
             new_counter.make_change_cond(self.binds)
             self.cnt_dict[new_counter.name] = new_counter
@@ -96,7 +100,6 @@ class CntAnalyzer(dataflow_facade):
                     ref_cnt_set = set([term for term in ref_cnt_set if str(term) == cnt_name])
                     cnt_ref_branch.append((ref_cnt_set, value))
                 cnt_ref_dict[term_name] = cnt_ref_branch
-            #print cnt_name, cnt_ref_dict
             counter.make_cnt_event_dict(cnt_ref_dict)
         del m_setter
 
@@ -121,6 +124,9 @@ class CntAnalyzer(dataflow_facade):
         raise Exception('Need op arg.')
 
     def active_load_const(self, node):
+        """ [FUNCTION]
+        Judge loading const or not.
+        """
         return (isinstance(node, pyverilog.dataflow.dataflow.DFIntConst) or
                 isinstance(node, pyverilog.dataflow.dataflow.DFEvalValue))
 
@@ -133,6 +139,21 @@ class CntAnalyzer(dataflow_facade):
             return down_cnt_profile(name, down_cond)
         else:
             raise Exception(name + ' is irregular counter.')
+
+    def decorate_html(html_name):
+        temp_html = open('temp.html', 'r')
+        out_html = open(html_name, 'w')
+        for line in temp_html:
+            out_html.write(line + '<br>')
+        temp_html.close()
+        out_html.close()
+
+    @out_as_html(decorate_html)
+    def show(self):
+        self.analyze_cnt()
+        self.make_cnt_event_all()
+        for counter in self.cnt_dict.values():
+            print(counter.name, counter.cnt_event_dict)
 
 class cnt_profile(object):
     compare_ope = ('Eq', 'NotEq', 'GreaterEq', 'LessEq', 'GreaterThan', 'LessThan')
@@ -193,6 +214,15 @@ class cnt_profile(object):
                 self.load_dict[value] = (tree.operator, cnt_cond)
 
     def make_change_cond(self, binds):
+        """ [FUNCTIONS]
+        search condition such as below.
+
+        ex.
+        if(up_cnt2 != 3'd5 && up_cnt == 3'd5) begin
+            up_cnt2 <= up_cnt2 + 3'd1;
+
+        This counter's max value = 3'd5
+        """
         for cond in self.change_dict:
             tree_list = binds.extract_all_dfxxx(cond, set([]), 0, pyverilog.dataflow.dataflow.DFOperator)
             tree_list = set([tree for tree in tree_list if tree[0].operator in self.plus_ope])
@@ -251,7 +281,7 @@ class cnt_profile(object):
                 return self.change_cond[1]
             else:
                 return self.change_cond[1] - 1
-        elif self.load_dict[0]:
+        elif self.load_dict and self.load_dict[0]:
             if self.load_dict[0][0] in self.eq_ope:
                 return self.load_dict[0][1]
             else:
@@ -276,16 +306,11 @@ class up_down_cnt_profile(cnt_profile):
         self._set_category()
     def _set_category(self):
         self.category = 'up/down counter'
-##    def tostr(self):
-##        return (cnt_profile.tostr(self) +
-##                "\nplus cond:" + str(self.up_cond) +
-##                "\nminus cond:" + str(self.down_cond))
+
 class up_cnt_profile(cnt_profile):
     def _set_category(self):
         self.category = 'up counter'
-##    def tostr(self):
-##        return (cnt_profile.tostr(self) +
-##                "\nplus cond:" + str(self.change_dict))
+
 class down_cnt_profile(cnt_profile):
     def _set_category(self):
         self.category = 'down counter'
@@ -293,14 +318,8 @@ class down_cnt_profile(cnt_profile):
         if self.load_const_cond and self.load_const_cond.values():
             return max(self.load_const_cond.values()) - 1
         return 2 ** (self.msb + 1) - 1
-##    def tostr(self):
-##        return (cnt_profile.tostr(self) +
-##                "\nminus cond:" + str(self.change_cond))
 
 if __name__ == '__main__':
-    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt2.v")
-    cnt_analyzer.analyze_cnt()
-    cnt_analyzer.make_cnt_event_all()
-    for counter in cnt_analyzer.cnt_dict.values():
-        print counter.name, counter.cnt_event_dict
+    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt.v")
+    cnt_analyzer.show()
 

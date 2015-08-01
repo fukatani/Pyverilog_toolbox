@@ -15,3 +15,4 @@ pyverilog_toolbox.egg-info/
 *.bat
 
 *.html
+pyverilog_toolbox/gui/parsetab.py
