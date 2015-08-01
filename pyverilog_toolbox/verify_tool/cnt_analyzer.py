@@ -144,14 +144,23 @@ class CntAnalyzer(dataflow_facade):
         temp_html = open('temp.html', 'r')
         out_html = open(html_name, 'w')
         for line in temp_html:
-            out_html.write(line + '<br>')
+            if 'name:' in line:
+                out_html.write('<font size = "5">' + line + '</font><br>')
+            elif 'Exist counters:\n' == line:
+                out_html.write('<font size = "5">' + line + '</font><br>')
+            elif 'Counter events:\n' == line:
+                out_html.write('<Hr><font size = "5">' + line + '</font><br>')
+            else:
+                out_html.write(line + '<br>')
         temp_html.close()
         out_html.close()
 
     @out_as_html(decorate_html)
     def show(self):
+        print("Exist counters:")
         self.analyze_cnt()
         self.make_cnt_event_all()
+        print("Counter events:")
         for counter in self.cnt_dict.values():
             print(counter.name, counter.cnt_event_dict)
 

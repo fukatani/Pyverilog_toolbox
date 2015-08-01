@@ -13,17 +13,16 @@ from pyverilog_toolbox.verify_tool.codeclone_finder import CodeCloneFinder
 from pyverilog_toolbox.verify_tool.unreferenced_finder import UnreferencedFinder
 from pyverilog_toolbox.verify_tool.metrics_calculator import MetricsCalculator
 from pyverilog_toolbox.verify_tool.combloop_finder import CombLoopFinder
-from pyverilog_toolbox.gui.output_display import OutputDisplay
 from pyverilog_toolbox.verify_tool.bindlibrary import CombLoopException
+from pyverilog_toolbox.verify_tool.cnt_analyzer import CntAnalyzer
+
+from pyverilog_toolbox.gui.output_display import OutputDisplay
 
 class GuiMain(wx.Frame):
     debug = False
     def __init__(self):
 
-        wx.Frame.__init__(self,None,wx.ID_ANY,"Pyv_guitools",size=(300,600))
-
-        #set error display
-        #sys.stderr = self.ShowErrorMessage
+        wx.Frame.__init__(self,None,wx.ID_ANY,"Pyv_guitools",size=(450,550))
 
         # initialiuze status bar
         self.CreateStatusBar()
@@ -35,22 +34,24 @@ class GuiMain(wx.Frame):
 
         # build body
         self.commands = ("dataflow analyzer", "controlflow analyzer", "calc metrics",
-                         "find combinational loop", "find unused variables", "find code clone")
+                         "find combinational loop", "find unused variables", "find code clone", "analyze counter")
         root_panel = wx.Panel(self,wx.ID_ANY)
+        root_layout = wx.BoxSizer(wx.VERTICAL)
 
         self.top_name_panel       = TextPanel(root_panel)
-        exebutton_panel  = CommandButtonPanel(root_panel, "EXECUTE!", self.click_exe_button)
-        filebutton_panel = CommandButtonPanel(root_panel, "file_select", self.click_fs_button)
-        self.selected_file_panel = wx.StaticText(root_panel, wx.ID_ANY, "")
-        self.radiobutton_panel = RadioPanel(root_panel, self.commands)
-
-        root_layout = wx.BoxSizer(wx.VERTICAL)
         root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "TOP MODULE NAME:"), border=5)
         root_layout.Add(self.top_name_panel, 0, wx.GROW|wx.ALL, border=5)
+
+        filebutton_panel = CommandButtonPanel(root_panel, "Verilog file select", self.click_fs_button)
+        self.selected_file_panel = wx.StaticText(root_panel, wx.ID_ANY, "")
         root_layout.Add(filebutton_panel, 0, wx.GROW|wx.ALL,border=5)
-        root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "Selecting file:"), border=5)
+        root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "Selecting verilog file:"), border=5)
         root_layout.Add(self.selected_file_panel, border=5)
+
+        self.radiobutton_panel = RadioPanel(root_panel, self.commands)
         root_layout.Add(self.radiobutton_panel, 0, wx.GROW|wx.ALL, border=10)
+
+        exebutton_panel  = CommandButtonPanel(root_panel, "EXECUTE!", self.click_exe_button)
         root_layout.Add(exebutton_panel, 0, wx.GROW|wx.LEFT|wx.RIGHT, border=5)
 
         root_panel.SetSizer(root_layout)
@@ -108,7 +109,11 @@ class GuiMain(wx.Frame):
                 cf = CodeCloneFinder(self.selected_full_path, topmodule=self.top_name_panel.get_text())
                 cf.html_name = log_file_name
                 cf.show()
-            else:#TODO
+            elif now_command == 'analyze counter':
+                ca = CntAnalyzer(self.selected_full_path, topmodule=self.top_name_panel.get_text())
+                ca.html_name = log_file_name
+                ca.show()
+            else:
                 self.ShowErrorMessage('unimplemented function')
                 return
             OutputDisplay(log_file_name).Show()
@@ -124,16 +129,15 @@ class Menu(wx.MenuBar):
 
         wx.MenuBar.__init__(self)
 
-        menu_file = wx.Menu()
-        menu_file.Append(wx.ID_ANY,"save")
-        menu_file.Append(wx.ID_ANY,"quit")
-        self.Append(menu_file,"file")
+        menu_menu = wx.Menu()
+        menu_menu.Append(wx.ID_ANY,"Usage(visit gitbub page online)")
+        menu_menu.Append(wx.ID_ANY,"quit")
+        self.Append(menu_menu,"menu")
 
-        menu_edit = wx.Menu()
-        menu_edit.Append(wx.ID_ANY,"copy")
-        menu_edit.Append(wx.ID_ANY,"paste")
-        self.Append(menu_edit,"edit")
-
+##        menu_edit = wx.Menu()
+##        menu_edit.Append(wx.ID_ANY,"copy")
+##        menu_edit.Append(wx.ID_ANY,"paste")
+##        self.Append(menu_edit,"edit")
 
 class TextPanel(wx.Panel):
 
@@ -173,7 +177,6 @@ class RadioPanel(wx.Panel):
 
 
 if __name__ == "__main__":
-
     application = wx.App(redirect=True)
     frame = GuiMain()
     frame.Show()
