@@ -150,6 +150,8 @@ class CntAnalyzer(dataflow_facade):
                 out_html.write('<font size = "5">' + line + '</font><br>')
             elif 'Counter events:\n' == line:
                 out_html.write('<Hr><font size = "5">' + line + '</font><br>')
+            elif ': No counter events.' in line:
+                out_html.write('<font color = "red">' + line + '</font><br>')
             else:
                 out_html.write(line + '<br>')
         temp_html.close()
@@ -162,7 +164,10 @@ class CntAnalyzer(dataflow_facade):
         self.make_cnt_event_all()
         print("Counter events:")
         for counter in self.cnt_dict.values():
-            print(counter.name, counter.cnt_event_dict)
+            if counter.cnt_event_dict:
+                print(counter.name + ': ' + str(counter.cnt_event_dict.values()))
+            else:
+                print(counter.name + ': No counter events.')
 
 class cnt_profile(object):
     compare_ope = ('Eq', 'NotEq', 'GreaterEq', 'LessEq', 'GreaterThan', 'LessThan')
@@ -329,6 +334,6 @@ class down_cnt_profile(cnt_profile):
         return 2 ** (self.msb + 1) - 1
 
 if __name__ == '__main__':
-    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt.v")
+    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt2.v")
     cnt_analyzer.show()
 

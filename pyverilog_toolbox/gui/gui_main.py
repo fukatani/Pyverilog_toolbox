@@ -1,8 +1,17 @@
 import wx
+import wx.html
 import os
 import sys
+import webbrowser
+import warnings
+import wx.lib.agw.persist as PM
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
+if getattr(sys, 'frozen', False):
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))))
+    print("path:")
+    print(sys.path)
+elif __file__:
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pyverilog.utils.verror import *
 from pyverilog_toolbox.verify_tool.regmap_analyzer import *
@@ -16,12 +25,17 @@ from pyverilog_toolbox.verify_tool.combloop_finder import CombLoopFinder
 from pyverilog_toolbox.verify_tool.bindlibrary import CombLoopException
 from pyverilog_toolbox.verify_tool.cnt_analyzer import CntAnalyzer
 
-from pyverilog_toolbox.gui.output_display import OutputDisplay
+#from pyverilog_toolbox.gui.output_display import OutputDisplay
 
 class GuiMain(wx.Frame):
     debug = False
-    def __init__(self):
 
+    def OnClose(self, event):
+        self._persistMgr.SaveAndUnregister()
+        self.vfile_data.dump()
+        event.Skip()
+
+    def __init__(self):
         wx.Frame.__init__(self,None,wx.ID_ANY,"Pyv_guitools",size=(450,550))
 
         # initialiuze status bar
@@ -30,15 +44,17 @@ class GuiMain(wx.Frame):
         self.GetStatusBar().SetBackgroundColour(None)
 
         # initialiuze menu bar
+        self.Bind(wx.EVT_MENU, self.selectMenu)
         self.SetMenuBar(Menu())
 
         # build body
         self.commands = ("dataflow analyzer", "controlflow analyzer", "calc metrics",
-                         "find combinational loop", "find unused variables", "find code clone", "analyze counter")
+                         "find combinational loop", "find unused variables", "find code clone",
+                         "analyze counter", "analyze register map")
         root_panel = wx.Panel(self,wx.ID_ANY)
         root_layout = wx.BoxSizer(wx.VERTICAL)
 
-        self.top_name_panel       = TextPanel(root_panel)
+        self.top_name_panel = TextPanel(root_panel)
         root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "TOP MODULE NAME:"), border=5)
         root_layout.Add(self.top_name_panel, 0, wx.GROW|wx.ALL, border=5)
 
@@ -57,62 +73,91 @@ class GuiMain(wx.Frame):
         root_panel.SetSizer(root_layout)
         root_layout.Fit(root_panel)
 
-    def click_fs_button(self, event):
-        frame.SetStatusText("Selecting verilog file(s)...")
         self.dirname = ''
 
-        f_dlg = wx.FileDialog(self, "Select verilog file(s)", self.dirname, "", "*.*", wx.FD_MULTIPLE)
-        if f_dlg.ShowModal() == wx.ID_OK:
-            self.selected_vfiles = f_dlg.GetFilenames()
-            self.selected_full_path = [f_dlg.GetDirectory() + "\\" + vfile for vfile in self.selected_vfiles]
-            if len(self.selected_vfiles) > 1:
-                self.selected_file_panel.SetLabel(self.selected_vfiles[0] + ', ...')
-            else:
-                self.selected_file_panel.SetLabel(self.selected_vfiles[0])
+        #for persistence
+        self.SetName('gui_main.dump')
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self._persistMgr = PM.PersistenceManager.Get()
+        wx.CallAfter(self.RegisterControls)
+        self.vfile_data = self.f_data()
 
+    def RegisterControls(self):
+        self.Freeze()
+        self.Register()
+        self.Thaw()
+
+    def Register(self, children=None):
+        if children is None:
+            self._persistMgr.RegisterAndRestore(self)
+            children = self.GetChildren()
+
+        for child in children:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                name = child.GetName()
+            if name not in PM.BAD_DEFAULT_NAMES and 'widget' not in name and \
+               'wxSpinButton' not in name:
+                self._persistMgr.RegisterAndRestore(child)
+            if child.GetChildren():
+                self.Register(child.GetChildren())
+
+    def click_fs_button(self, event):
+        f_dlg = wx.FileDialog(self, "Select verilog file(s)", self.dirname, "", "*.*", wx.FD_MULTIPLE)
+        frame.SetStatusText("Selecting verilog file(s)...")
+        if f_dlg.ShowModal() == wx.ID_OK:
+            self.vfile_data.set_files(f_dlg.GetFilenames(), f_dlg.GetDirectory(), self.selected_file_panel)
         self.SetStatusText("")
         f_dlg.Destroy()
+
+    def selectMenu(self, event):
+        if event.GetId() == wx.ID_ABOUT:
+            webbrowser.open('https://github.com/fukatani/Pyverilog_toolbox/blob/master/Readme.md')
+        elif event.GetId() == wx.ID_EXIT:
+            self.Destroy()
 
     def click_exe_button(self, event):
         now_command = self.radiobutton_panel.get_selected_item()
         if self.debug:
             print(now_command)
 
-        if not hasattr(self, 'selected_vfiles'):
+        if not hasattr(self.vfile_data, 'selected_vfiles'):
             self.ShowErrorMessage('Please select verilog files before execution.')
             return
 
         log_file_name = 'log.html'
         try:
             if now_command == 'dataflow analyzer':
-                df = dataflow_facade(self.selected_full_path, topmodule=self.top_name_panel.get_text())
+                df = dataflow_facade(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 df.html_name = log_file_name
                 df.print_dataflow()
             elif now_command == 'controlflow analyzer':
-                df = dataflow_facade(self.selected_full_path, topmodule=self.top_name_panel.get_text())
+                df = dataflow_facade(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 df.html_name = log_file_name
                 df.print_controlflow()
             elif now_command == 'calc metrics':
-                mc = MetricsCalculator(self.selected_full_path, topmodule=self.top_name_panel.get_text())
+                mc = MetricsCalculator(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 mc.html_name = log_file_name
                 mc.synth_profile()
                 mc.show()
             elif now_command == 'find combinational loop':
-                cf = CombLoopFinder(self.selected_full_path, topmodule=self.top_name_panel.get_text())
+                cf = CombLoopFinder(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 cf.html_name = log_file_name
                 cf.search_combloop()
             elif now_command == 'find unused variables':
-                uf = UnreferencedFinder(self.selected_full_path, topmodule=self.top_name_panel.get_text())
+                uf = UnreferencedFinder(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 uf.html_name = log_file_name
                 uf.search_unreferenced()
             elif now_command == 'find code clone':
-                cf = CodeCloneFinder(self.selected_full_path, topmodule=self.top_name_panel.get_text())
+                cf = CodeCloneFinder(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 cf.html_name = log_file_name
                 cf.show()
             elif now_command == 'analyze counter':
-                ca = CntAnalyzer(self.selected_full_path, topmodule=self.top_name_panel.get_text())
+                ca = CntAnalyzer(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 ca.html_name = log_file_name
                 ca.show()
+            elif now_command == "analyze register map":
+                pass
             else:
                 self.ShowErrorMessage('unimplemented function')
                 return
@@ -123,6 +168,41 @@ class GuiMain(wx.Frame):
     def ShowErrorMessage(self, message):
         wx.MessageBox(message, 'Error!', wx.ICON_ERROR)
 
+    class f_data(object):
+        """ [CLASSES]
+        Selected verilog file data.
+        Registerd by pickle.
+        """
+        def __init__(self):
+            self.dump_enable = False
+            if self.dump_enable:
+                try:
+                    with open("pyv.dump", "r") as f:
+                        (self.selected_vfiles, self.selected_full_path) = pickle.load(f)
+                    #if hasattr(self, 'selected_full_path'):
+                except (IOError, EOFError):
+                    pass
+
+
+        def __get_state__(self):
+            return self.selected_vfiles, self.selected_full_path
+
+        def set_label(self, file_panel):
+            if len(self.selected_vfiles) > 1:
+                file_panel.SetLabel(self.selected_vfiles[0] + ', ...')
+            else:
+                file_panel.SetLabel(self.selected_vfiles[0])
+
+        def set_files(self, filenames, directory, file_panel):
+            self.selected_vfiles = filenames
+            self.selected_full_path = [directory + "\\" + vfile for vfile in self.selected_vfiles]
+            self.set_label(file_panel)
+
+        def dump(self):
+            if self.dump_enable:
+                with open("pyv.dump", "w") as f:
+                    pickle.dump(self, f)
+
 class Menu(wx.MenuBar):
 
     def __init__(self):
@@ -130,31 +210,26 @@ class Menu(wx.MenuBar):
         wx.MenuBar.__init__(self)
 
         menu_menu = wx.Menu()
-        menu_menu.Append(wx.ID_ANY,"Usage(visit gitbub page online)")
-        menu_menu.Append(wx.ID_ANY,"quit")
+        menu_menu.Append(wx.ID_ABOUT,"display usage(visit online github page)","https://github.com/fukatani/Pyverilog_toolbox")
+        menu_menu.Append(wx.ID_EXIT,"exit","exit pyv_gui")
         self.Append(menu_menu,"menu")
-
-##        menu_edit = wx.Menu()
-##        menu_edit.Append(wx.ID_ANY,"copy")
-##        menu_edit.Append(wx.ID_ANY,"paste")
-##        self.Append(menu_edit,"edit")
 
 class TextPanel(wx.Panel):
 
     def __init__(self, parent):
-
         wx.Panel.__init__(self,parent, wx.ID_ANY)
         self.disp_text = wx.TextCtrl(self, wx.ID_ANY, "TOP", style=wx.TE_RIGHT)
+        self.disp_text.SetName("top_module.dump")
         layout = wx.BoxSizer(wx.HORIZONTAL)
         layout.Add(self.disp_text, 1)
         self.SetSizer(layout)
+
     def get_text(self):
         return self.disp_text.GetValue()
 
 class CommandButtonPanel(wx.Panel):
 
     def __init__(self, parent, disp_text, click_event):
-
         wx.Panel.__init__(self, parent, wx.ID_ANY)
         button = wx.Button(self, wx.ID_ANY, disp_text)
         button.Bind(wx.EVT_BUTTON, click_event)
@@ -167,6 +242,7 @@ class RadioPanel(wx.Panel):
         wx.Panel.__init__(self,parent,wx.ID_ANY)
 
         self.radiobox = wx.RadioBox(self, wx.ID_ANY, choices=button_array, style=wx.RA_VERTICAL)
+        self.radiobox.SetName("command_select.dump")
         layout = wx.BoxSizer(wx.VERTICAL)
         layout.Add(self.radiobox, 1, flag=wx.GROW)
 
@@ -175,9 +251,31 @@ class RadioPanel(wx.Panel):
     def get_selected_item(self):
         return self.radiobox.GetStringSelection()
 
+class RegMapConfig(wx.Frame):
+    def __init__(self, log_file_name):
+
+        wx.Frame.__init__(self,None,wx.ID_ANY,"Analyze register map",size=(300,200))
+        log = open(log_file_name, 'r')
+        log_disp_panel = wx.html.HtmlWindow(self)
+        if "gtk2" in wx.PlatformInfo:
+            log_disp_panel.SetStandardFonts()
+        log_disp_panel.SetPage("".join(log.readlines()))
+
+class OutputDisplay(wx.Frame):
+    def __init__(self, log_file_name):
+
+        wx.Frame.__init__(self,None,wx.ID_ANY,"Output report",size=(900,700))
+        log = open(log_file_name, 'r')
+        log_disp_panel = wx.html.HtmlWindow(self)
+        if "gtk2" in wx.PlatformInfo:
+            log_disp_panel.SetStandardFonts()
+        log_disp_panel.SetPage("".join(log.readlines()))
 
 if __name__ == "__main__":
-    application = wx.App(redirect=True)
+    build_flag = False
+    application = wx.App(redirect=build_flag)#false in debugging
     frame = GuiMain()
     frame.Show()
     application.MainLoop()
+
+

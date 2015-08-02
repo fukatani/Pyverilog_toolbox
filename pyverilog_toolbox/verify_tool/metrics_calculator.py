@@ -210,9 +210,9 @@ class MetricsCalculator(dataflow_facade):
         out_html = open(html_name, 'w')
         for line in temp_html:
             if 'Module metrics\n' == line or 'Register metrics\n' == line or 'Function metrics\n' == line:
-                out_html.write('<Hr Color="#fe81df">' + '<font size="5">' + line + '</font>' + '<br>' + '<br>')
+                out_html.write('<Hr Color="blue">' + '<font size="5">' + line + '</font>' + '<br>' + '<br>')
             elif '(twice larger than average)' in line:
-                out_html.write('<font color="#ff0000">' + line + '</font>' + '<br>')
+                out_html.write('<font color="red">' + line + '</font>' + '<br>')
             else:
                 out_html.write(line + '<br>')
         temp_html.close()
