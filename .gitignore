@@ -17,3 +17,4 @@ pyverilog_toolbox.egg-info/
 *.html
 pyverilog_toolbox/gui/parsetab.py
 *.ps1
+pyverilog_toolbox/gui/setup.txt

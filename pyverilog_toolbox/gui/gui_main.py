@@ -8,8 +8,6 @@ import wx.lib.agw.persist as PM
 
 if getattr(sys, 'frozen', False):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))))))
-    print("path:")
-    print(sys.path)
 elif __file__:
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -54,8 +52,8 @@ class GuiMain(wx.Frame):
         root_panel = wx.Panel(self,wx.ID_ANY)
         root_layout = wx.BoxSizer(wx.VERTICAL)
 
-        self.top_name_panel = TextPanel(root_panel)
         root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "TOP MODULE NAME:"), border=5)
+        self.top_name_panel = TextPanel(root_panel)
         root_layout.Add(self.top_name_panel, 0, wx.GROW|wx.ALL, border=5)
 
         filebutton_panel = CommandButtonPanel(root_panel, "Verilog file select", self.click_fs_button)
@@ -157,7 +155,8 @@ class GuiMain(wx.Frame):
                 ca.html_name = log_file_name
                 ca.show()
             elif now_command == "analyze register map":
-                pass
+                RegMapConfig(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text()).Show()
+                return
             else:
                 self.ShowErrorMessage('unimplemented function')
                 return
@@ -216,10 +215,10 @@ class Menu(wx.MenuBar):
 
 class TextPanel(wx.Panel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, initial="TOP"):
         wx.Panel.__init__(self,parent, wx.ID_ANY)
-        self.disp_text = wx.TextCtrl(self, wx.ID_ANY, "TOP", style=wx.TE_RIGHT)
-        self.disp_text.SetName("top_module.dump")
+        self.disp_text = wx.TextCtrl(self, wx.ID_ANY, initial, style=wx.TE_RIGHT)
+        self.disp_text.SetName(initial + ".dump")
         layout = wx.BoxSizer(wx.HORIZONTAL)
         layout.Add(self.disp_text, 1)
         self.SetSizer(layout)
@@ -252,24 +251,92 @@ class RadioPanel(wx.Panel):
         return self.radiobox.GetStringSelection()
 
 class RegMapConfig(wx.Frame):
-    def __init__(self, log_file_name):
+    def __init__(self, full_path, topmodule):
+        wx.Frame.__init__(self,None,wx.ID_ANY,"Analyze register map",size=(300,400))
+        self.full_path = full_path
+        self.topmodule = topmodule
+        self.__persistMgr = PM.PersistenceManager.Get()
 
-        wx.Frame.__init__(self,None,wx.ID_ANY,"Analyze register map",size=(300,200))
-        log = open(log_file_name, 'r')
-        log_disp_panel = wx.html.HtmlWindow(self)
-        if "gtk2" in wx.PlatformInfo:
-            log_disp_panel.SetStandardFonts()
-        log_disp_panel.SetPage("".join(log.readlines()))
+        root_panel = wx.Panel(self,wx.ID_ANY)
+        root_layout = wx.BoxSizer(wx.VERTICAL)
+
+        root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "WRITE FLAG SIGNAL:"), border=5)
+        self.write_flag_panel = TextPanel(root_panel, "TOP.WRITE")
+        root_layout.Add(self.write_flag_panel, 0, wx.GROW|wx.ALL, border=5)
+
+##        root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "READ FLAG SIGNAL:"), border=5)
+##        self.read_flag_panel = TextPanel(root_panel, "TOP.READ")
+##        root_layout.Add(self.read_flag_panel, 0, wx.GROW|wx.ALL, border=5)
+
+        root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "ADDRESS SIGNAL"), border=5)
+        self.address_panel = TextPanel(root_panel, "TOP.ADR")
+        root_layout.Add(self.address_panel, 0, wx.GROW|wx.ALL, border=5)
+
+        root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "WRITE DATA SIGNAL"), border=5)
+        self.write_data_panel = TextPanel(root_panel, "TOP.W_DATA")
+        root_layout.Add(self.write_data_panel, 0, wx.GROW|wx.ALL, border=5)
+
+        root_layout.Add(wx.StaticText(root_panel, wx.ID_ANY, "READ DATA SIGNAL"), border=5)
+        self.read_data_panel = TextPanel(root_panel, "TOP.R_DATA")
+        root_layout.Add(self.read_data_panel, 0, wx.GROW|wx.ALL, border=5)
+
+        exebutton_panel  = CommandButtonPanel(root_panel, "EXECUTE!", self.click_exe_button)
+        root_layout.Add(exebutton_panel, 0, wx.GROW|wx.LEFT|wx.RIGHT, border=5)
+
+        root_panel.SetSizer(root_layout)
+        root_layout.Fit(root_panel)
+
+        #for persistence
+        self.SetName('regmap_config.dump')
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self._persistMgr = PM.PersistenceManager.Get()
+        wx.CallAfter(self.RegisterControls)
+
+    def click_exe_button(self, event):
+        with open("setup.txt", "w") as setup_file:
+            setup_file.write("READ_FLAG:" + "None" + "\n")
+            setup_file.write("WRITE_FLAG:" + self.write_flag_panel.get_text() + "\n")
+            setup_file.write("ADDRESS:" + self.address_panel.get_text() + "\n")
+            setup_file.write("WRITE_DATA:" + self.write_data_panel.get_text() + "\n")
+            setup_file.write("READ_DATA:" + self.read_data_panel.get_text() + "\n")
+        ra = RegMapAnalyzer(self.full_path, "setup.txt", self.topmodule, "out.csv")
+        ra.getRegMaps()
+        ra.csv2html("out.csv")
+        OutputDisplay("log.html").Show()
+
+    def RegisterControls(self):
+        self.Freeze()
+        self.Register()
+        self.Thaw()
+
+    def Register(self, children=None):
+        if children is None:
+            self._persistMgr.RegisterAndRestore(self)
+            children = self.GetChildren()
+
+        for child in children:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                name = child.GetName()
+            if name not in PM.BAD_DEFAULT_NAMES and 'widget' not in name and \
+               'wxSpinButton' not in name:
+                self._persistMgr.RegisterAndRestore(child)
+            if child.GetChildren():
+                self.Register(child.GetChildren())
+
+    def OnClose(self, event):
+        self._persistMgr.SaveAndUnregister()
+        event.Skip()
 
 class OutputDisplay(wx.Frame):
     def __init__(self, log_file_name):
-
         wx.Frame.__init__(self,None,wx.ID_ANY,"Output report",size=(900,700))
         log = open(log_file_name, 'r')
         log_disp_panel = wx.html.HtmlWindow(self)
         if "gtk2" in wx.PlatformInfo:
             log_disp_panel.SetStandardFonts()
         log_disp_panel.SetPage("".join(log.readlines()))
+
 
 if __name__ == "__main__":
     build_flag = False

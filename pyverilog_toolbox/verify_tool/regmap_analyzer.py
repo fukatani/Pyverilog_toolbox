@@ -10,6 +10,7 @@
 
 import sys
 import os
+import csv
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
@@ -22,7 +23,7 @@ import pyverilog.controlflow.splitter as splitter
 
 class RegMapAnalyzer(dataflow_facade):
 
-    def __init__(self, code_file_name, setup_file, out_file='out.csv'):
+    def __init__(self, code_file_name, setup_file, topmodule='', out_file='out.csv'):
         dataflow_facade.__init__(self, code_file_name)
         self.out_file_name = out_file
 
@@ -51,6 +52,30 @@ class RegMapAnalyzer(dataflow_facade):
         print 'Write_map:\n' + str(write_map.map)
         print 'Read_map:\n' + str(read_map.map)
         return write_map, read_map
+
+    def csv2html(self, csv_file_name):
+        """ [FUNCTIONS]
+           Convert csv file to html.
+           Refer to http://www.ctroms.com/blog/code/python/2011/04/20/csv-to-html-table-with-python/ (by Chris Trombley)
+        """
+        reader = csv.reader(open(csv_file_name))
+        htmlfile = open("log.html","w")
+        rownum = 0
+
+        htmlfile.write('<table rules="all">')
+        for row in reader:
+            if rownum == 0:
+                htmlfile.write('<tr>')
+                for column in row:
+                    htmlfile.write('<th>' + column + '</th>')
+                htmlfile.write('</tr>')
+            else:
+                htmlfile.write('<tr>')
+                for column in row:
+                    htmlfile.write('<td>' + column + '</td>')
+                htmlfile.write('</tr>')
+            rownum += 1
+        htmlfile.write('</table>')
 
 class MapFactory(object):
     def __init__(self, file_name):
@@ -196,6 +221,7 @@ class ReadMap(WriteMap):
                 sig_bit = tree[1]
                 if is_data_sig(sig_name, verb):
                     self._add_new_reg(sig_name, sig_bit, address, map_bit)
+
 
 if __name__ == '__main__':
     ranalyzer = RegMapAnalyzer("../testcode/regmap_split.v", "../testcode/setup.txt")
