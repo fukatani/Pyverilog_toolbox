@@ -19,15 +19,15 @@ Usage
 
 Download from
 https://github.com/fukatani/Pyverilog_toolbox/releases/tag/gui0.0.1
+
 And choose pyverilog_toolbox.exe.
 
 
 Click .exe file.
+
 (Don't place it in the directory which name include double-byte character.)
 
-```
-Pyinstaller gui_main_onefile.spec
-```
+
 License
 ==============================
 Pyverilog_toolbox gui stand alone version includes Pyverilog, that License is Apache License 2.0, 
@@ -44,4 +44,8 @@ Other
 
 if you need GUI stand alone version for other OS, you can it by using .spec file included in this project. You need wxpython, pyintaller, pyverilog, and pyverilog's requirements.
 
-(get fromhttps://github.com/fukatani/Pyverilog_toolbox/tree/master/pyverilog_toolbox/gui)
+(get from https://github.com/fukatani/Pyverilog_toolbox/tree/master/pyverilog_toolbox/gui)
+
+```
+Pyinstaller gui_main_onefile.spec
+```
