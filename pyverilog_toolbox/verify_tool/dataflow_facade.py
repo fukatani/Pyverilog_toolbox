@@ -18,6 +18,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 import pyverilog.controlflow.controlflow_analyzer as controlflow_analyzer
 from optparse import OptionParser
 import pyverilog.utils.util as util
+import pyverilog.dataflow.bindvisitor as BindVisitor
+from types import MethodType
 from pyverilog.dataflow.dataflow_analyzer import VerilogDataflowAnalyzer
 from pyverilog.dataflow.optimizer import VerilogDataflowOptimizer
 from bindlibrary import BindLibrary
@@ -39,6 +41,77 @@ def out_as_html(html_deco):
         return __helper
     return _helper
 
+
+def _createAlwaysinfo(self, node, scope):
+    """ [FUNCTIONS]
+    This function is replaced by BindVisitor._createAlwaysinfo (in bindvisitor.py) in pyverilog_toolbox.
+    But this correspondence is temporary.
+    """
+    sens = None
+    senslist = []
+    clock_edge = None
+    clock_name = None
+    clock_bit = None
+    reset_edge = None
+    reset_name = None
+    reset_bit = None
+
+    for l in node.sens_list.list:
+        if l.sig is None:
+            continue
+        if isinstance(l.sig, pyverilog.vparser.ast.Pointer):
+            signame = self._get_signal_name(l.sig.var)
+            bit = l.sig.ptr.eval()
+        else:
+            signame = self._get_signal_name(l.sig)
+            bit = 0
+##            if signaltype.isClock(signame):
+##                clock_name = self.searchTerminal(signame, scope)
+##                clock_edge = l.type
+##                declared_lsb = self.dataflow.terms[clock_name].lsb.eval()
+##                clock_bit = bit - declared_lsb
+##            elif signaltype.isReset(signame):
+##                reset_name = self.searchTerminal(signame, scope)
+##                reset_edge = l.type
+##                declared_lsb = self.dataflow.terms[reset_name].lsb.eval()
+##                reset_bit = bit - declared_lsb
+##            else:
+##                senslist.append(l)
+        try:
+            if self._is_reset(node, l.sig):
+                reset_name = self.searchTerminal(signame, scope)
+                reset_edge = l.type
+                declared_lsb = self.dataflow.terms[reset_name].lsb.eval()
+                reset_bit = bit - declared_lsb
+            else:
+                clock_name = self.searchTerminal(signame, scope)
+                clock_edge = l.type
+                declared_lsb = self.dataflow.terms[clock_name].lsb.eval()
+                clock_bit = bit - declared_lsb
+        except KeyError:
+            sys.exit("Error!: " + signame + " isn't declared @" + str(scope) + ".")
+
+    if clock_edge is not None and len(senslist) > 0:
+        raise verror.FormatError('Illegal sensitivity list')
+    if reset_edge is not None and len(senslist) > 0:
+        raise verror.FormatError('Illegal sensitivity list')
+
+    return (clock_name, clock_edge, clock_bit, reset_name, reset_edge, reset_bit,senslist)
+
+def _is_reset(self, node, sig):
+    """ [FUNCTIONS]
+    This function is assigned as BindVisitor._is_reset (in bindvisitor.py) in pyverilog_toolbox.
+    But this correspondence is temporary.
+    """
+    if not isinstance(node.statement.statements[0], pyverilog.vparser.ast.IfStatement):
+        return False
+    elif node.statement.statements[0].cond == sig:
+        return True
+    elif node.statement.statements[0].cond.children():
+        return node.statement.statements[0].cond.children()[0] == sig
+    else:
+        return False
+
 class dataflow_facade(VerilogControlflowAnalyzer):
     """ [CLASSES]
         Facade pattern for getting dataflow.
@@ -46,7 +119,12 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         If commandline option exists, first argument is regard as verilog file name.
     """
     def __init__(self, code_file_name, topmodule='', config_file=None):
+        #TODO this corrspondence is temporal.
+        pyverilog.dataflow.bindvisitor.BindVisitor._createAlwaysinfo = MethodType(_createAlwaysinfo, None, pyverilog.dataflow.bindvisitor.BindVisitor)
+        pyverilog.dataflow.bindvisitor.BindVisitor._is_reset = MethodType(_is_reset, None, pyverilog.dataflow.bindvisitor.BindVisitor)
+        #
         topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist, fsm_vars = self.get_dataflow(code_file_name)
+
         VerilogControlflowAnalyzer.__init__(self, topmodule, terms, binddict,
         resolved_terms, resolved_binddict,constlist,fsm_vars)
         self.binds = BindLibrary(binddict, terms)
