@@ -26,4 +26,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=None,
                upx=True,
-               name='gui_main')
+               name='pyv_gui')

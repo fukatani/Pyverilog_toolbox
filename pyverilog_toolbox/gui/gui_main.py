@@ -102,7 +102,7 @@ class GuiMain(wx.Frame):
 
     def click_fs_button(self, event):
         f_dlg = wx.FileDialog(self, "Select verilog file(s)", self.dirname, "", "*.*", wx.FD_MULTIPLE)
-        frame.SetStatusText("Selecting verilog file(s)...")
+        self.SetStatusText("Selecting verilog file(s)...")
         if f_dlg.ShowModal() == wx.ID_OK:
             self.vfile_data.set_files(f_dlg.GetFilenames(), f_dlg.GetDirectory(), self.selected_file_panel)
         self.SetStatusText("")
@@ -124,6 +124,8 @@ class GuiMain(wx.Frame):
             return
 
         log_file_name = 'log.html'
+
+        self.SetStatusText("Analyzing...")
         try:
             if now_command == 'dataflow analyzer':
                 df = dataflow_facade(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
@@ -161,9 +163,14 @@ class GuiMain(wx.Frame):
                 self.ShowErrorMessage('unimplemented function')
                 return
             OutputDisplay(log_file_name).Show()
+            self.SetStatusText("")
         except (DefinitionError, FormatError, ImplementationError, CombLoopException) as e:
             self.ShowErrorMessage(e.message)
-
+        except IOError as e:
+            if e.filename == 'preprocess.output':
+                self.ShowErrorMessage(e.filename + 'is not found.' + '\n(Please make sure Icarus verilog is installed)')
+            else:
+                self.ShowErrorMessage(e.filename + 'is not found.')
     def ShowErrorMessage(self, message):
         wx.MessageBox(message, 'Error!', wx.ICON_ERROR)
 
