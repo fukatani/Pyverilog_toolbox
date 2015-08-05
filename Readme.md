@@ -15,6 +15,8 @@ Pyverilog requires Icarus verilog
 Installation
 ==============================
 
+(If you want to use GUI stand alone version for windows, [Click here to get detail](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/gui.md)
+
 If you want to use Pyverilog as a general library, you can install on your environment by using setup.py. 
 
 If you use Python 2.7,
@@ -38,13 +40,13 @@ Features
 codeclone_finder can find pair of the register clone, which always hold same value.
 Also can find pair of the invert register, which always hold different value.
 
-[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/codeclone.md "codeclone_finder")
+[Click here to get detail](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/codeclone.md "codeclone_finder")
 
 ## combloop_finder
 
 Combinational logic loop is sticky problem, but you can find it by combloop_finder easily.
 
-[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/combloop.md "combloop_finder")
+[Click here to get detail](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/combloop.md "combloop_finder")
 
 
 ## unreferenced_finder
@@ -52,20 +54,20 @@ Combinational logic loop is sticky problem, but you can find it by combloop_find
 Unreferenced_finder can find signals which isn't referenced by any signals.
 By using this, you can delte unnecessary codes.
 
-[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/unreferenced.md "unreferenced_finder")
+[Click here to get detail](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/unreferenced.md "unreferenced_finder")
 
 ##metrics_calculator
 
 metrics_analyzer is metrics measurment tools for Verilog HDL.
 You can visualize complecity of module/register/function/.
 
-[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/metrics.md "metrics_analyzer")
+[Click here to get detail](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/metrics.md "metrics_analyzer")
 
 ## regmap_analyzer
 
 regmap_analyzer can analyze register map structure from RTL.
 
-[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/regmap.md "regmap_analyzer")
+[Click here to get detail](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/regmap.md "regmap_analyzer")
 
 ## cnt_analyzer
 
@@ -73,7 +75,7 @@ cnt_analyzer analyze counter property(up or down, max value, reset value and cou
 And extracting event which depends on counter value.
 This feature help you finding redundunt counter, deadlock loop, and other counter trouble. 
 
-[Click here to know usage](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/cnt_analyzer.md "cnt_analyzer")
+[Click here to get detail](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/cnt_analyzer.md "cnt_analyzer")
 
 License
 ==============================
