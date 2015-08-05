@@ -46,7 +46,7 @@ class GuiMain(wx.Frame):
         self.SetMenuBar(Menu())
 
         # build body
-        self.commands = ("dataflow analyzer", "controlflow analyzer", "calc metrics",
+        self.commands = ("exec dataflow analyzer", "exec controlflow analyzer", "calculate code metrics",
                          "find combinational loop", "find unused variables", "find code clone",
                          "analyze counter", "analyze register map")
         root_panel = wx.Panel(self,wx.ID_ANY)
@@ -127,15 +127,15 @@ class GuiMain(wx.Frame):
 
         self.SetStatusText("Analyzing...")
         try:
-            if now_command == 'dataflow analyzer':
+            if now_command == 'exec dataflow analyzer':
                 df = dataflow_facade(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 df.html_name = log_file_name
                 df.print_dataflow()
-            elif now_command == 'controlflow analyzer':
+            elif now_command == 'exec controlflow analyzer':
                 df = dataflow_facade(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 df.html_name = log_file_name
                 df.print_controlflow()
-            elif now_command == 'calc metrics':
+            elif now_command == 'calculate code metrics':
                 mc = MetricsCalculator(self.vfile_data.selected_full_path, topmodule=self.top_name_panel.get_text())
                 mc.html_name = log_file_name
                 mc.synth_profile()

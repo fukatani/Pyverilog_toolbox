@@ -210,7 +210,7 @@ class MetricsCalculator(dataflow_facade):
         out_html = open(html_name, 'w')
         for line in temp_html:
             if 'Module metrics\n' == line or 'Register metrics\n' == line or 'Function metrics\n' == line:
-                out_html.write('<Hr Color="blue">' + '<font size="5">' + line + '</font>' + '<br>' + '<br>')
+                out_html.write('<Hr color="blue">' + '<font size="5">' + line + '</font>' + '<br>' + '<br>')
             elif '(twice larger than average)' in line:
                 out_html.write('<font color="red">' + line + '</font>' + '<br>')
             else:
@@ -264,7 +264,10 @@ class metrics_profile(object):
 
         cnt = 0
         for key, value in self.m_ordered.items():
-            print(self.level + ':' + str(key))
+            if len(key) > 1:
+                print(self.level + ':' + str(key[0]))
+            else:
+                print(self.level + ':' + str(key))
             if value > 2 * self.get_average_score():
                 print('total: ' + str(value) + '(twice larger than average)')
             else:
