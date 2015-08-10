@@ -12,7 +12,7 @@ if there is a combinational loop in your design, combloop_finder raise error and
 
 ex.
 
-```
+```verilog
 module TOP(CLK, RST);
   input CLK,RST;
   wire wire1,wire2,wire3;

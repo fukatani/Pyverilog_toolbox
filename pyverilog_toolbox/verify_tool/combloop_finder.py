@@ -40,6 +40,6 @@ class CombLoopFinder(dataflow_facade):
         print 'There is no combinational loop.'
 
 if __name__ == '__main__':
-    c_finder = CombLoopFinder("../testcode/combloop4.v")
+    c_finder = CombLoopFinder("../testcode/not_combloop.v")
     c_finder.search_combloop()
 

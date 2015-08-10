@@ -11,7 +11,7 @@ python cnt_analyzer.py xxxx.v
 
 ex.
 Input verilog file:
-```
+```verilog
 module TOP(CLK, RSTN, UP_ENABLE, UP_ENABLE2, CLEAR);
   input CLK,RSTN,UP_ENABLE,UP_ENABLE2,CLEAR;
 

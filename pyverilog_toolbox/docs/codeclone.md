@@ -9,7 +9,7 @@ python codeclone_finder.py xxxx.v
 ex.
 Input verilog file:
 
-```
+```verilog
   always @(posedge CLK or negedge RST) begin
     if(RST) begin
       reg1 <= 1'b0;

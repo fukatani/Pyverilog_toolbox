@@ -20,7 +20,7 @@ Analysis result will be output as out.csv.
 ex.
 
 Input verilog file:
-```
+```verilog
   always @(posedge CLK) begin
     if(RST) begin
       reg0[1:0] <= 0;

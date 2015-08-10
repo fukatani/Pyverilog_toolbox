@@ -61,7 +61,7 @@ def _createAlwaysinfo(self, node, scope):
             continue
         if isinstance(l.sig, pyverilog.vparser.ast.Pointer):
             signame = self._get_signal_name(l.sig.var)
-            bit = l.sig.ptr.eval()
+            bit = int(l.sig.ptr.value)
         else:
             signame = self._get_signal_name(l.sig)
             bit = 0
@@ -78,7 +78,7 @@ def _createAlwaysinfo(self, node, scope):
 ##            else:
 ##                senslist.append(l)
         try:
-            if self._is_reset(node, l.sig):
+            if self._is_reset(node, l.sig, l.type):
                 reset_name = self.searchTerminal(signame, scope)
                 reset_edge = l.type
                 declared_lsb = self.dataflow.terms[reset_name].lsb.eval()
@@ -98,19 +98,27 @@ def _createAlwaysinfo(self, node, scope):
 
     return (clock_name, clock_edge, clock_bit, reset_name, reset_edge, reset_bit,senslist)
 
-def _is_reset(self, node, sig):
+def _is_reset(self, node, sig, edge):
     """ [FUNCTIONS]
     This function is assigned as BindVisitor._is_reset (in bindvisitor.py) in pyverilog_toolbox.
     But this correspondence is temporary.
     """
     if not isinstance(node.statement.statements[0], pyverilog.vparser.ast.IfStatement):
         return False
-    elif node.statement.statements[0].cond == sig:
-        return True
-    elif node.statement.statements[0].cond.children():
-        return node.statement.statements[0].cond.children()[0] == sig
+    if isinstance(node.statement.statements[0].cond, pyverilog.vparser.ast.Ulnot) and edge == 'negedge':
+        target = node.statement.statements[0].cond.children()[0]
+    elif edge == 'posedge':
+        target = node.statement.statements[0].cond
     else:
         return False
+
+    if isinstance(target, pyverilog.vparser.ast.Pointer):
+        if sig.ptr == target.ptr:
+            target = target.var
+        else:
+            return False
+
+    return target == sig
 
 class dataflow_facade(VerilogControlflowAnalyzer):
     """ [CLASSES]

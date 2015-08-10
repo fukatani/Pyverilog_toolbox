@@ -29,7 +29,7 @@ module SUB(CLK,RST,IN, OUT);
   reg reg1;
   wire OUT = reg1;
 
-  always @(posedge CLK or negedge RST) begin
+  always @(posedge CLK or posedge RST) begin
     if(RST) begin
       reg1 <= 1'b0;
     end else begin
