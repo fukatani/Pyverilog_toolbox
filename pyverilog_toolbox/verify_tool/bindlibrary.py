@@ -377,5 +377,9 @@ def eval_value(tree):
         return tree.eval()
     elif isinstance(tree, pyverilog.dataflow.dataflow.DFEvalValue):
         return tree.value
+    elif tree is None:
+        return 0
+    else:
+        raise Exception('Unexpected error@bindlibrary')
 
 

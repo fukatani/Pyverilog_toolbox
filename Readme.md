@@ -52,6 +52,7 @@ Combinational logic loop is sticky problem, but you can find it by combloop_find
 ## unreferenced_finder
 
 Unreferenced_finder can find signals which isn't referenced by any signals.
+Also floating nodes can be found.
 By using this, you can delte unnecessary codes.
 
 [Click here to get detail](https://github.com/fukatani/Pyverilog_toolbox/blob/master/pyverilog_toolbox/docs/unreferenced.md "unreferenced_finder")

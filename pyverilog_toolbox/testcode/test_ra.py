@@ -58,8 +58,18 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_unreferenced(self):
         u_finder = UnreferencedFinder("unreferenced_variables.v")
-        self.assertEqual(str(sorted(u_finder.search_unreferenced())),
-                        '[\'TOP.IN2\', \'TOP.reg2\', \'TOP.reg3\', \'TOP.sub.IN\']')
+        self.assertEqual(str(sorted(u_finder.search_unreferenced(), key=lambda x:str(x))),
+                        "['TOP.IN2', 'TOP.reg2', 'TOP.reg3', 'TOP.sub.IN']")
+
+    def test_floating(self):
+        u_finder = UnreferencedFinder("floating.v")
+        self.assertEqual(str(sorted(u_finder.search_floating(), key=lambda x:str(x))),
+                        "['TOP.in1', 'TOP.reg2']")
+
+    def test_floating2(self):
+        u_finder = UnreferencedFinder("floating2.v")
+        self.assertEqual(str(sorted(u_finder.search_floating(), key=lambda x:str(x))),
+                        "['TOP.IN', 'TOP.reg1[1]', 'TOP.reg3[2]']")
 
     def test_cnt_analyzer(self):
         c_analyzer = CntAnalyzer("norm_cnt2.v")
