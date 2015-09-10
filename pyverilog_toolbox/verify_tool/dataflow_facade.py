@@ -127,8 +127,9 @@ class dataflow_facade(VerilogControlflowAnalyzer):
     """
     def __init__(self, code_file_name, topmodule='', config_file=None):
         #TODO this corrspondence is temporal.
-        pyverilog.dataflow.bindvisitor.BindVisitor._createAlwaysinfo = MethodType(_createAlwaysinfo, None, pyverilog.dataflow.bindvisitor.BindVisitor)
-        pyverilog.dataflow.bindvisitor.BindVisitor._is_reset = MethodType(_is_reset, None, pyverilog.dataflow.bindvisitor.BindVisitor)
+        #pyverilog.dataflow.bindvisitor.BindVisitor._createAlwaysinfo = MethodType(_createAlwaysinfo, None, pyverilog.dataflow.bindvisitor.BindVisitor)
+        #pyverilog.dataflow.bindvisitor.BindVisitor._is_reset = MethodType(_is_reset, None, pyverilog.dataflow.bindvisitor.BindVisitor)
+        #pyverilog.dataflow.bindvisitor.BindVisitor._createAlwaysinfo = _createAlwaysinfo.__get__(pyverilog.dataflow.bindvisitor.BindVisitor)
         #
         topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist, fsm_vars = self.get_dataflow(code_file_name)
 

@@ -16,7 +16,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 import pyverilog.utils.version
 import pyverilog.utils.util as util
 from pyverilog.dataflow.dataflow import *
-from types import MethodType
 
 class BindLibrary(object):
     """ [CLASSES]
@@ -285,30 +284,30 @@ class MothernodeSetter(BindLibrary) :
         """ [FUNCTIONS]
             Chenge df***.__eq__()method to identify each tree.
         """
-        DFConstant.__eq__ = MethodType(return_false, None, DFConstant)
-        DFEvalValue.__eq__ = MethodType(return_false, None, DFEvalValue)
-        DFUndefined.__eq__ = MethodType(return_false, None, DFUndefined)
-        DFHighImpedance.__eq__ = MethodType(return_false, None, DFHighImpedance)
-        DFTerminal.__eq__ = MethodType(return_false, None, DFTerminal)
-        DFBranch.__eq__ = MethodType(return_false, None, DFBranch)
-        DFOperator.__eq__ = MethodType(return_false, None, DFOperator)
-        DFPartselect.__eq__ = MethodType(return_false, None, DFPartselect)
-        DFPointer.__eq__ = MethodType(return_false, None, DFPointer)
-        DFConcat.__eq__ = MethodType(return_false, None, DFConcat)
+        DFConcat.__eq__ = return_false.__get__(DFConcat)
+        DFEvalValue.__eq__ = return_false.__get__(DFEvalValue)
+        DFUndefined.__eq__ = return_false.__get__(DFUndefined)
+        DFHighImpedance.__eq__ = return_false.__get__(DFHighImpedance)
+        DFTerminal.__eq__ = return_false.__get__(DFTerminal)
+        DFBranch.__eq__ = return_false.__get__(DFBranch)
+        DFOperator.__eq__ = return_false.__get__(DFOperator)
+        DFPartselect.__eq__ = return_false.__get__(DFPartselect)
+        DFPointer.__eq__ = return_false.__get__(DFPointer)
+        DFConcat.__eq__ = return_false.__get__(DFConcat)
         #DFDelay.__eq__ = MethodType(return_false, None, DFDelay)
         #DFSyscall.__eq__ = MethodType(return_false, None, DFSyscall)
 
     def enable_dfxxx_eq(self):
-        DFConstant.__eq__ = MethodType(DFConstant_eq_org, None, DFConstant)
-        DFEvalValue.__eq__ = MethodType(DFEvalValue_eq_org, None, DFEvalValue)
-        DFUndefined.__eq__ = MethodType(DFUndefined_eq_org, None, DFUndefined)
-        DFHighImpedance.__eq__ = MethodType(DFHighImpedance_eq_org, None, DFHighImpedance)
-        DFTerminal.__eq__ = MethodType(DFTerminal_eq_org, None, DFTerminal)
-        DFBranch.__eq__ = MethodType(DFBranch_eq_org, None, DFBranch)
-        DFOperator.__eq__ = MethodType(DFOperator_eq_org, None, DFOperator)
-        DFPartselect.__eq__ = MethodType(DFPartselect_eq_org, None, DFPartselect)
-        DFPointer.__eq__ = MethodType(DFPointer_eq_org, None, DFPointer)
-        DFConcat.__eq__ = MethodType(DFConcat_eq_org, None, DFConcat)
+        DFConstant.__eq__ = DFConstant_eq_org.__get__(DFConstant)
+        DFEvalValue.__eq__ = DFEvalValue_eq_org.__get__(DFEvalValue)
+        DFUndefined.__eq__ = DFUndefined_eq_org.__get__(DFUndefined)
+        DFHighImpedance.__eq__ = DFHighImpedance_eq_org.__get__(DFHighImpedance)
+        DFTerminal.__eq__ = DFTerminal_eq_org.__get__(DFTerminal)
+        DFBranch.__eq__ = DFBranch_eq_org.__get__(DFBranch)
+        DFOperator.__eq__ = DFOperator_eq_org.__get__(DFOperator)
+        DFPartselect.__eq__ = DFPartselect_eq_org.__get__(DFPartselect)
+        DFPointer.__eq__ = DFPointer_eq_org.__get__(DFPointer)
+        DFConcat.__eq__ = DFConcat_eq_org.__get__(DFConcat)
 
 def return_false(self, other):
     return False
