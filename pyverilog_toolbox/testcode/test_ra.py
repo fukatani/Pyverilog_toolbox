@@ -48,7 +48,7 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_reg_clone(self):
         cc_finder = CodeCloneFinder("reg_clone.v")
-        clones = sorted(cc_finder.search_regclone(), key = lambda t: t[0])
+        clones = sorted(cc_finder.search_regclone(), key = lambda t: str(t[0]))
         ordered_clones = []
         for clone in clones:
             ordered_clones.append(str(tuple(sorted(clone, key=lambda t:str(t)))))
@@ -78,18 +78,18 @@ class TestSequenceFunctions(unittest.TestCase):
                         "['TOP.IN', 'TOP.reg1[1]', 'TOP.reg3[2]']")
 
 #TODO correspond to travis
-##    def test_cnt_analyzer(self):
-##        c_analyzer = CntAnalyzer("norm_cnt2.v")
-##        cnt_dict = c_analyzer.analyze_cnt()
-##        self.assertEqual(cnt_dict['TOP.down_cnt'].tostr(),
-##                        "name: TOP.down_cnt\ncategory: down counter\nreset val: 0" +
-##                        "\nmax_val: 4\nmother counter:set([])")
-##        self.assertEqual(cnt_dict['TOP.up_cnt'].tostr(),
-##                        'name: TOP.up_cnt\ncategory: up counter\nreset val: 0' +
-##                        '\nmax_val: 6\nmother counter:set([])')
-##        self.assertEqual(cnt_dict['TOP.up_cnt2'].tostr(),
-##                        "name: TOP.up_cnt2\ncategory: up counter\nreset val: 0" +
-##                        "\nmax_val: 4\nmother counter:set(['TOP.up_cnt'])")
+    def test_cnt_analyzer(self):
+        c_analyzer = CntAnalyzer("norm_cnt2.v")
+        cnt_dict = c_analyzer.analyze_cnt()
+        self.assertEqual(cnt_dict['TOP.down_cnt'].tostr(),
+                        "name: TOP.down_cnt\ncategory: down counter\nreset val: 0" +
+                        "\nmax_val: 4\nmother counter:()")
+        self.assertEqual(cnt_dict['TOP.up_cnt'].tostr(),
+                        'name: TOP.up_cnt\ncategory: up counter\nreset val: 0' +
+                        '\nmax_val: 6\nmother counter:()')
+        self.assertEqual(cnt_dict['TOP.up_cnt2'].tostr(),
+                        "name: TOP.up_cnt2\ncategory: up counter\nreset val: 0" +
+                        "\nmax_val: 4\nmother counter:('TOP.up_cnt',)")
 ##        c_analyzer.make_cnt_event_all()
 ##        self.assertEqual(str(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict),
 ##                        '{2: ["TOP.now=\'d1 @(TOP_up_cnt==3\'d2)", "TOP.is_count_max=\'d1 @(TOP_up_cnt==3\'d2)", "TOP.up_cnt2=\'d0 @(TOP_up_cnt==3\'d2)"]}')
@@ -99,7 +99,7 @@ class TestSequenceFunctions(unittest.TestCase):
         cnt_dict = c_analyzer.analyze_cnt()
         self.assertEqual(cnt_dict['TOP.up_cnt'].tostr(),
                         "name: TOP.up_cnt\ncategory: up counter\nreset val: 0" +
-                        "\nmax_val: 7\nmother counter:set([])")
+                        "\nmax_val: 7\nmother counter:()")
 
     def test_normal(self):
         ranalyzer = RegMapAnalyzer("regmap.v", "setup.txt")

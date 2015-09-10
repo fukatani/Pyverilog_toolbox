@@ -18,7 +18,6 @@ import pyverilog.controlflow.controlflow_analyzer as controlflow_analyzer
 from optparse import OptionParser
 import pyverilog.utils.util as util
 import pyverilog.dataflow.bindvisitor as BindVisitor
-from types import MethodType
 from pyverilog.dataflow.dataflow_analyzer import VerilogDataflowAnalyzer
 from pyverilog.dataflow.optimizer import VerilogDataflowOptimizer
 from pyverilog_toolbox.verify_tool.bindlibrary import BindLibrary
@@ -127,9 +126,8 @@ class dataflow_facade(VerilogControlflowAnalyzer):
     """
     def __init__(self, code_file_name, topmodule='', config_file=None):
         #TODO this corrspondence is temporal.
-        #pyverilog.dataflow.bindvisitor.BindVisitor._createAlwaysinfo = MethodType(_createAlwaysinfo, None, pyverilog.dataflow.bindvisitor.BindVisitor)
-        #pyverilog.dataflow.bindvisitor.BindVisitor._is_reset = MethodType(_is_reset, None, pyverilog.dataflow.bindvisitor.BindVisitor)
-        #pyverilog.dataflow.bindvisitor.BindVisitor._createAlwaysinfo = _createAlwaysinfo.__get__(pyverilog.dataflow.bindvisitor.BindVisitor)
+        BindVisitor._createAlwaysinfo = _createAlwaysinfo.__get__(BindVisitor)
+        BindVisitor._is_reset = _is_reset.__get__(BindVisitor)
         #
         topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist, fsm_vars = self.get_dataflow(code_file_name)
 
@@ -155,7 +153,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         if args:
             filelist = args
         elif code_file_name:
-            if hasattr(code_file_name, "__iter__"):
+            if hasattr(code_file_name, "__iter__") and not isinstance(code_file_name, str):
                 filelist = code_file_name
             else:
                 filelist = (code_file_name,)

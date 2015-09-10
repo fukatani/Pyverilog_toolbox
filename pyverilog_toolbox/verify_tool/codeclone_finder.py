@@ -55,9 +55,11 @@ class CodeCloneFinder(dataflow_facade):
         #sort for assign code(same assign reg must line up next to)
         cd_order = collections.OrderedDict(sorted(code_dict.items(), key=lambda t: t[1] + str(t[0])))
         clone_regs = []
+        cd_values = list(cd_order.values())
+        cd_keys = list(cd_order.keys())
         for cnt in range(len(cd_order.keys()) - 1):
-            if cd_order.values()[cnt] == cd_order.values()[cnt + 1]:
-                clone_regs.append((cd_order.keys()[cnt], cd_order.keys()[cnt + 1]))
+            if cd_values[cnt] == cd_values[cnt + 1]:
+                clone_regs.append((cd_keys[cnt], cd_keys[cnt + 1]))
 
         if clone_regs:
             print('Clone reg pairs:')
@@ -108,14 +110,16 @@ class CodeCloneFinder(dataflow_facade):
             if not 'Reg' in tv.termtype: continue
             target_tree = self.makeTree(tk)
             functable[tk, bit] = splitter.split(target_tree)
-        ft_order = collections.OrderedDict(sorted(functable.items(), key=lambda t: t[0]))
+        ft_order = collections.OrderedDict(sorted(functable.items(), key=lambda t: str(t[0])))
 
         invert_regs = []
+        ft_values = list(ft_order.values())
+        ft_keys = list(ft_order.keys())
         for cnt in range(len(ft_order.keys()) - 1):
-            for target_cnt in range(cnt + 1, len(ft_order.keys())):#roop for same formal branch
-                if ft_order.values()[cnt].keys() != ft_order.values()[target_cnt].keys(): break #not same branch
-                if judge_invert_reg(ft_order.values()[cnt].values(), ft_order.values()[target_cnt].values()):
-                    invert_regs.append((ft_order.keys()[cnt], ft_order.keys()[target_cnt]))
+            for target_cnt in range(cnt + 1, len(ft_keys)):#roop for same formal branch
+                if ft_values[cnt].keys() != ft_values[target_cnt].keys(): break #not same branch
+                if judge_invert_reg(ft_values[cnt].values(), ft_values[target_cnt].values()):
+                    invert_regs.append((ft_keys[cnt], ft_keys[target_cnt]))
         if invert_regs:
             print('Invert reg pairs:')
             self.deploy_reg_info(invert_regs)

@@ -101,6 +101,7 @@ class CntAnalyzer(dataflow_facade):
                     cnt_ref_branch.append((ref_cnt_set, value))
                 cnt_ref_dict[term_name] = cnt_ref_branch
             counter.make_cnt_event_dict(cnt_ref_dict)
+        #m_setter.enable_dfxxx_eq()
         del m_setter
 
     def get_reset_value(self, cnt_name, target_tree, reset_name):
@@ -310,7 +311,7 @@ class cnt_profile(object):
                 "\ncategory: " + self.category +
                 "\nreset val: " + str(self.reset_value) +
                 "\nmax_val: " + str(self.calc_cnt_period()) +
-                "\nmother counter:" + str(self.mother_cnts))
+                "\nmother counter:" + str(tuple(self.mother_cnts)))
 
 class up_down_cnt_profile(cnt_profile):
     def __init__(self, name, up_cond, down_cond):
