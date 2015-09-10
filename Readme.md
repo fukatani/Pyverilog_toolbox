@@ -1,3 +1,5 @@
+https://travis-ci.org/fukatani/Pyverilog_toolbox.svg?branch=master
+
 Introduction
 ==============================
 Pyverilog_toolbox is Pyverilog-based verification/design tool including code clone finder, metrics calculator and so on.
