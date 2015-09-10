@@ -9,7 +9,7 @@ Thanks to Pyverilog developer shtaxxx.
 
 Software Requirements
 ==============================
-* Python (2.7)
+* Python (2.7 or 3.4)
 * Pyverilog (you can download from https://github.com/shtaxxx/Pyverilog)
 Pyverilog requires Icarus verilog
 

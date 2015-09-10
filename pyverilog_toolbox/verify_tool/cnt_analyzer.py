@@ -102,7 +102,7 @@ class CntAnalyzer(dataflow_facade):
                     cnt_ref_branch.append((ref_cnt_set, value))
                 if cnt_ref_branch:
                     cnt_ref_dict[term_name] = cnt_ref_branch
-                m_setter.disable_dfxxx_eq()
+                m_setter.enable_dfxxx_eq()
             counter.make_cnt_event_dict(cnt_ref_dict)
 
     def get_reset_value(self, cnt_name, target_tree, reset_name):
@@ -260,35 +260,35 @@ class cnt_profile(object):
         """
         self.cnt_event_dict = {}
         for term_name, ref_cnt_set in cnt_ref_dict.items():
-            root_ope = None
+            root_opes = []
             for ref_cnt,value in ref_cnt_set:
                 if len(ref_cnt) != 1:
                     raise Exception('Found redundunt condition description @' + term_name)
                 ref_cnt = tuple(ref_cnt)[0]
 
                 if ref_cnt.mother_node.operator in self.compare_ope:
-                    root_ope = ref_cnt.mother_node
+                    root_opes.append(ref_cnt.mother_node)
                     cond_lsb = 0
                     diff_list = [1,]
                 elif isinstance(ref_cnt.mother_node, pyverilog.dataflow.dataflow.DFPartselect):
                     if ref_cnt.mother_node.mother_node.operator in self.compare_ope:
-                        root_ope = ref_cnt.mother_node.mother_node
+                        root_opes.append(ref_cnt.mother_node.mother_node)
                         cond_lsb = ref_cnt.mother_node.lsb
                     if ref_cnt.mother_node.msb == self.msb:
                         diff_list = [1,]
                     else:
                         diff_list = [i for i in range(1,self.msb - ref_cnt.mother_node.msb)]
 
-            if root_ope is None: continue
-            if str(root_ope.nextnodes[0]) == str(ref_cnt.name):
-                comp_pair = eval_value(root_ope.nextnodes[1])
-            elif str(root_ope.nextnodes[1]) == str(ref_cnt.name):
-                comp_pair = eval_value(root_ope.nextnodes[0])
-            num_list = [comp_pair * (2 ** cond_lsb) * diff for diff in diff_list]
-            for num in num_list:
-                if num not in self.cnt_event_dict.keys():
-                    self.cnt_event_dict[num] = []
-                self.cnt_event_dict[num].append(term_name + '=' + value.tocode() + ' @' + root_ope.tocode())
+            for root_ope in root_opes:
+                if str(root_ope.nextnodes[0]) == str(ref_cnt.name):
+                    comp_pair = eval_value(root_ope.nextnodes[1])
+                elif str(root_ope.nextnodes[1]) == str(ref_cnt.name):
+                    comp_pair = eval_value(root_ope.nextnodes[0])
+                num_list = [comp_pair * (2 ** cond_lsb) * diff for diff in diff_list]
+                for num in num_list:
+                    if num not in self.cnt_event_dict.keys():
+                        self.cnt_event_dict[num] = []
+                    self.cnt_event_dict[num].append(term_name + '=' + value.tocode() + ' @' + root_ope.tocode())
         #print self.name, self.cnt_event_dict
 
     def calc_cnt_period(self):
