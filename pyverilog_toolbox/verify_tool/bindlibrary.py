@@ -284,7 +284,19 @@ class MothernodeSetter(BindLibrary) :
         """ [FUNCTIONS]
             Chenge df***.__eq__()method to identify each tree.
         """
-        DFConcat.__eq__ = return_false.__get__(DFConcat)
+
+        self.DFConstant__eq__org = DFConstant.__eq__
+        self.DFEvalValue__eq__org = DFEvalValue.__eq__
+        self.DFUndefined__eq__org = DFUndefined.__eq__
+        self.DFHighImpedance__eq__org = DFHighImpedance.__eq__
+        self.DFTerminal__eq__org = DFTerminal.__eq__
+        self.DFBranch__eq__org = DFBranch.__eq__
+        self.DFOperator__eq__org = DFOperator.__eq__
+        self.DFPartselect__eq__org = DFPartselect.__eq__
+        self.DFPointer__eq__org = DFPointer.__eq__
+        self.DFConcat__eq__org = DFConcat.__eq__
+
+        DFConstant.__eq__ = return_false.__get__(DFConstant)
         DFEvalValue.__eq__ = return_false.__get__(DFEvalValue)
         DFUndefined.__eq__ = return_false.__get__(DFUndefined)
         DFHighImpedance.__eq__ = return_false.__get__(DFHighImpedance)
@@ -298,16 +310,16 @@ class MothernodeSetter(BindLibrary) :
         #DFSyscall.__eq__ = MethodType(return_false, None, DFSyscall)
 
     def enable_dfxxx_eq(self):
-        DFConstant.__eq__ = DFConstant_eq_org.__get__(DFConstant)
-        DFEvalValue.__eq__ = DFEvalValue_eq_org.__get__(DFEvalValue)
-        DFUndefined.__eq__ = DFUndefined_eq_org.__get__(DFUndefined)
-        DFHighImpedance.__eq__ = DFHighImpedance_eq_org.__get__(DFHighImpedance)
-        DFTerminal.__eq__ = DFTerminal_eq_org.__get__(DFTerminal)
-        DFBranch.__eq__ = DFBranch_eq_org.__get__(DFBranch)
-        DFOperator.__eq__ = DFOperator_eq_org.__get__(DFOperator)
-        DFPartselect.__eq__ = DFPartselect_eq_org.__get__(DFPartselect)
-        DFPointer.__eq__ = DFPointer_eq_org.__get__(DFPointer)
-        DFConcat.__eq__ = DFConcat_eq_org.__get__(DFConcat)
+        DFConstant.__eq__ = self.DFConstant__eq__org
+        DFEvalValue.__eq__ = self.DFEvalValue__eq__org
+        DFUndefined.__eq__ = self.DFUndefined__eq__org
+        DFHighImpedance.__eq__ = self.DFHighImpedance__eq__org
+        DFTerminal.__eq__ = self.DFTerminal__eq__org
+        DFBranch.__eq__ = self.DFBranch__eq__org
+        DFOperator.__eq__ = self.DFOperator__eq__org
+        DFPartselect.__eq__ = self.DFPartselect__eq__org
+        DFPointer.__eq__ = self.DFPointer__eq__org
+        DFConcat.__eq__ = self.DFConcat__eq__org
 
 def return_false(self, other):
     return False
