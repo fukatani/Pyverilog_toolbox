@@ -53,7 +53,7 @@ class CodeCloneFinder(dataflow_facade):
             code_dict[tk, bit] = target_tree.tocode()
 
         #sort for assign code(same assign reg must line up next to)
-        cd_order = collections.OrderedDict(sorted(code_dict.items(), key=lambda t: t[1]))
+        cd_order = collections.OrderedDict(sorted(code_dict.items(), key=lambda t: t[1] + str(t[0])))
         clone_regs = []
         for cnt in range(len(cd_order.keys()) - 1):
             if cd_order.values()[cnt] == cd_order.values()[cnt + 1]:

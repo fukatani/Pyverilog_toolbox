@@ -54,7 +54,8 @@ class TestSequenceFunctions(unittest.TestCase):
             ordered_clones.append(str(tuple(sorted(clone, key=lambda t:str(t)))))
         ordered_clones = sorted(ordered_clones, key=lambda t:str(t))
         self.assertEqual(ordered_clones,
-                        ['((TOP.reg1, 0), (TOP.sub.reg1, 0))', '((TOP.reg3, 0), (TOP.sub.reg1, 0))'])
+                        ['((TOP.reg1, 0), (TOP.reg3, 0))', '((TOP.reg3, 0), (TOP.sub.reg1, 0))'])
+
         inv_reg_description = set([str(inv_pair) for inv_pair in cc_finder.search_invert_regs()])
         ok1 = ('((TOP.reg1, 0), (TOP.reg4, 0))' in inv_reg_description) or ('((TOP.reg4, 0), (TOP.reg1, 0))' in inv_reg_description)
         ok2 = ('((TOP.reg3, 0), (TOP.reg4, 0))' in inv_reg_description) or ('((TOP.reg4, 0), (TOP.reg3, 0))' in inv_reg_description)
