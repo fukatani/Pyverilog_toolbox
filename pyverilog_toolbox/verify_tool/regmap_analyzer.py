@@ -49,8 +49,8 @@ class RegMapAnalyzer(dataflow_facade):
         read_map.output_csv(self.out_file)
         self.out_file.close()
 
-        print 'Write_map:\n' + str(write_map.map)
-        print 'Read_map:\n' + str(read_map.map)
+        print('Write_map:\n' + str(write_map.map))
+        print('Read_map:\n' + str(read_map.map))
         return write_map, read_map
 
     def csv2html(self, csv_file_name):

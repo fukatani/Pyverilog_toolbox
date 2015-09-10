@@ -1,0 +1,15 @@
+language: python
+python:
+  - 2.7
+#  - 3.4
+before_script:
+  - sudo apt-get install iverilog
+  - pip install jinja2
+  - sudo apt-get install graphviz
+  - pip install pygraphviz
+  - pip install pyverilog
+script:
+  - cd pyverilog_toolbox/testcode/
+  - python test_ra.py
+  - cd ../verify_tool/
+  - python codeclone_finder.py

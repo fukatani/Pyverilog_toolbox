@@ -8,7 +8,6 @@
 # License: Apache 2.0
 #-------------------------------------------------------------------------------
 
-
 import sys
 import os
 import pyverilog
@@ -22,7 +21,7 @@ import pyverilog.dataflow.bindvisitor as BindVisitor
 from types import MethodType
 from pyverilog.dataflow.dataflow_analyzer import VerilogDataflowAnalyzer
 from pyverilog.dataflow.optimizer import VerilogDataflowOptimizer
-from bindlibrary import BindLibrary
+from pyverilog_toolbox.verify_tool.bindlibrary import BindLibrary
 from pyverilog.controlflow.controlflow_analyzer import VerilogControlflowAnalyzer
 
 def out_as_html(html_deco):

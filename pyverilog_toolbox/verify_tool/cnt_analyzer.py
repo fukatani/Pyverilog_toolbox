@@ -61,7 +61,7 @@ class CntAnalyzer(dataflow_facade):
                 self.cnt_dict[child_cnt].mother_cnts.add(cnt_name)
 
         for counter in self.cnt_dict.values():
-            print counter.tostr() + '\n'
+            print(counter.tostr() + '\n')
 
         return self.cnt_dict
 
