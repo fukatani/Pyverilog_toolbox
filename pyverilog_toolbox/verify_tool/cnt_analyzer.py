@@ -79,30 +79,31 @@ class CntAnalyzer(dataflow_facade):
         end
         cnt_event_dict[3,'Eq)] = (reg1 <= 1'd1,)
         """
-
+        #self.make_term_reffered_dict()
         m_setter = MothernodeSetter(self.binds)
 
         for cnt_name, counter in self.cnt_dict.items():
             cnt_ref_dict = {}
             for term_name in self.term_ref_dict[cnt_name]:
-                if term_name == cnt_name: continue
+                if term_name == cnt_name: continue #exclude self reference
                 scope = self.binds.get_scope(term_name)
                 target_tree = self.makeTree(scope)
                 funcdict = splitter.split(target_tree)
                 funcdict = splitter.remove_reset_condition(funcdict)
+                if not funcdict: continue
                 branch_dict = {func[-1]: value for func, value in funcdict.items()}#extract last condition
 
+                cnt_ref_branch=[]
+                m_setter.disable_dfxxx_eq()
                 for branch, value in branch_dict.items():
-                    cnt_ref_branch=[]
-                    ref_cnt_set = set([])
-                    ref_cnt_set = ref_cnt_set | m_setter.extract_all_dfxxx(branch, set([]), 0, pyverilog.dataflow.dataflow.DFTerminal)
+                    ref_cnt_set = m_setter.extract_all_dfxxx(branch, set([]), 0, pyverilog.dataflow.dataflow.DFTerminal)
                     ref_cnt_set = set([term[0] for term in ref_cnt_set])
                     ref_cnt_set = set([term for term in ref_cnt_set if str(term) == cnt_name])
                     cnt_ref_branch.append((ref_cnt_set, value))
-                cnt_ref_dict[term_name] = cnt_ref_branch
+                if cnt_ref_branch:
+                    cnt_ref_dict[term_name] = cnt_ref_branch
+                m_setter.disable_dfxxx_eq()
             counter.make_cnt_event_dict(cnt_ref_dict)
-        #m_setter.enable_dfxxx_eq()
-        del m_setter
 
     def get_reset_value(self, cnt_name, target_tree, reset_name):
         if target_tree.condnode.operator == 'Ulnot':
@@ -259,26 +260,26 @@ class cnt_profile(object):
         """
         self.cnt_event_dict = {}
         for term_name, ref_cnt_set in cnt_ref_dict.items():
+            root_ope = None
             for ref_cnt,value in ref_cnt_set:
                 if len(ref_cnt) != 1:
                     raise Exception('Found redundunt condition description @' + term_name)
                 ref_cnt = tuple(ref_cnt)[0]
 
-                if str(ref_cnt.mother_node) in self.compare_ope:
+                if ref_cnt.mother_node.operator in self.compare_ope:
                     root_ope = ref_cnt.mother_node
                     cond_lsb = 0
                     diff_list = [1,]
                 elif isinstance(ref_cnt.mother_node, pyverilog.dataflow.dataflow.DFPartselect):
-                    if str(ref_cnt.mother_node.mother_node) in compare_ope:
+                    if ref_cnt.mother_node.mother_node.operator in self.compare_ope:
                         root_ope = ref_cnt.mother_node.mother_node
                         cond_lsb = ref_cnt.mother_node.lsb
                     if ref_cnt.mother_node.msb == self.msb:
                         diff_list = [1,]
                     else:
                         diff_list = [i for i in range(1,self.msb - ref_cnt.mother_node.msb)]
-                else:
-                    continue
 
+            if root_ope is None: continue
             if str(root_ope.nextnodes[0]) == str(ref_cnt.name):
                 comp_pair = eval_value(root_ope.nextnodes[1])
             elif str(root_ope.nextnodes[1]) == str(ref_cnt.name):

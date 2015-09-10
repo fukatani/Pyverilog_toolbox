@@ -190,7 +190,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         return options.topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist, fsm_vars
 
     def make_term_ref_dict(self):
-        self.term_ref_dict ={}
+        self.term_ref_dict = {}
         for tv,tk,bvi,bit,term_lsb in self.binds.walk_reg_each_bit():
             if 'Rename' in tv.termtype: continue
             target_tree = self.makeTree(tk)
@@ -199,6 +199,17 @@ class dataflow_facade(VerilogControlflowAnalyzer):
                 if str(tree) not in self.term_ref_dict.keys():
                     self.term_ref_dict[str(tree)] = set([])
                 self.term_ref_dict[str(tree)].add(str(tk))
+
+    def make_term_reffered_dict(self):
+        if not self.term_ref_dict:
+            self.make_term_ref_dict
+        self.term_reffered_dict = {}
+        for ref, terms in self.term_ref_dict.items():
+            for term in terms:
+                if not term in self.term_reffered_dict.keys():
+                    self.term_reffered_dict[term] = []
+                self.term_reffered_dict[term].append(ref)
+        #print(self.term_reffered_dict)
 
     def make_extract_dfterm_dict(self):
         return_dict = {}

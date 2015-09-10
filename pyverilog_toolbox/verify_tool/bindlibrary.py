@@ -262,7 +262,7 @@ class MothernodeSetter(BindLibrary) :
         self.scope_dict = bind_library.scope_dict
         self.cache = bind_library.cache
         self.gnb_cache = bind_library.gnb_cache
-        self.disable_dfxxx_eq()
+        #self.disable_dfxxx_eq()
 
     def __del__(self):
         self.enable_dfxxx_eq()
