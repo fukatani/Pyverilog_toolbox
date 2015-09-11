@@ -13,7 +13,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
-import pyverilog.utils.version
+import pyverilog
 import pyverilog.utils.util as util
 from pyverilog.dataflow.dataflow import *
 

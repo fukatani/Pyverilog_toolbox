@@ -10,10 +10,10 @@
 
 import sys
 import os
+import pyverilog
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
-import pyverilog.utils.version
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
 from pyverilog_toolbox.verify_tool.bindlibrary import *
@@ -91,19 +91,20 @@ class CntAnalyzer(dataflow_facade):
                 funcdict = splitter.split(target_tree)
                 funcdict = splitter.remove_reset_condition(funcdict)
                 if not funcdict: continue
-                branch_dict = {func[-1]: value for func, value in funcdict.items()}#extract last condition
+                last_branch_dict = {func[-1]: value for func, value in funcdict.items()}#extract last condition
 
                 cnt_ref_branch=[]
                 m_setter.disable_dfxxx_eq()
-                for branch, value in branch_dict.items():
+                for branch, value in last_branch_dict.items():
                     ref_cnt_set = m_setter.extract_all_dfxxx(branch, set([]), 0, pyverilog.dataflow.dataflow.DFTerminal)
                     ref_cnt_set = set([term[0] for term in ref_cnt_set])
                     ref_cnt_set = set([term for term in ref_cnt_set if str(term) == cnt_name])
-                    cnt_ref_branch.append((ref_cnt_set, value))
+                    if ref_cnt_set:
+                        cnt_ref_branch.append((ref_cnt_set, value, branch))
                 if cnt_ref_branch:
                     cnt_ref_dict[term_name] = cnt_ref_branch
-                m_setter.enable_dfxxx_eq()
             counter.make_cnt_event_dict(cnt_ref_dict)
+        m_setter.enable_dfxxx_eq()
 
     def get_reset_value(self, cnt_name, target_tree, reset_name):
         if target_tree.condnode.operator == 'Ulnot':
@@ -258,38 +259,69 @@ class cnt_profile(object):
             cnt_ref_dict[term_name] = cnt_ref_branch
             cnt_event_dict[num] = term_name + "=" + value.tocode()
         """
+        class root_ope_info(object) :
+            def __init__(self, root_ope, cond_lsb, diff_list, branch):
+                self.root_ope = root_ope
+                self.cond_lsb = cond_lsb
+                self.diff_list = diff_list
+                self.branch = branch
+            def get_ope(self):
+                return self.branch.tocode()
+##                if not self.inverted:
+##                    return self.root_ope.tocode()
+##                else:
+##                    if self.root_ope.operator == 'Eq':
+##                        return self.root_ope.tocode().replace('==','!=')
+##                    elif self.root_ope.operator == 'NotEq':
+##                        return self.root_ope.tocode().replace('!=','==')
+##                    elif '>' in self.root_ope.tocode():
+##                        return self.root_ope.tocode().replace('>','<')
+##                    elif '<' in self.root_ope.tocode():
+##                        return self.root_ope.tocode().replace('<','>')
+##                    else:
+##                        raise Exception('Unexpected exception')
+
         self.cnt_event_dict = {}
         for term_name, ref_cnt_set in cnt_ref_dict.items():
-            root_opes = []
-            for ref_cnt,value in ref_cnt_set:
+            root_ope_info_dict = {}
+            for ref_cnt, value, branch in ref_cnt_set:
                 if len(ref_cnt) != 1:
                     raise Exception('Found redundunt condition description @' + term_name)
                 ref_cnt = tuple(ref_cnt)[0]
-
                 if ref_cnt.mother_node.operator in self.compare_ope:
-                    root_opes.append(ref_cnt.mother_node)
-                    cond_lsb = 0
-                    diff_list = [1,]
+                    root_ope_info_dict[ref_cnt, value] = root_ope_info(ref_cnt.mother_node, 0, [1,], branch)
+                elif ref_cnt.mother_node.operator == 'Ulnot' and ref_cnt.mother_node.children()[0].operator in self.compare_ope:
+                    root_ope_info_dict[ref_cnt, value] = root_ope_info(ref_cnt.mother_node.children()[0], 0, [1,], branch)
                 elif isinstance(ref_cnt.mother_node, pyverilog.dataflow.dataflow.DFPartselect):
                     if ref_cnt.mother_node.mother_node.operator in self.compare_ope:
-                        root_opes.append(ref_cnt.mother_node.mother_node)
+                        root_ope = ref_cnt.mother_node.mother_node
                         cond_lsb = ref_cnt.mother_node.lsb
+                        inverted = False
+                    elif ref_cnt.mother_node.mother_node.operator == 'Ulnot' and \
+                        ref_cnt.mother_node.mother_node.children()[0].operator in self.compare_ope:
+                            root_ope = ref_cnt.mother_node.mother_node.children()[0]
+                            cond_lsb = ref_cnt.mother_node.children()[0].lsb
+                            inverted = True
+                    else:
+                        continue
                     if ref_cnt.mother_node.msb == self.msb:
                         diff_list = [1,]
                     else:
                         diff_list = [i for i in range(1,self.msb - ref_cnt.mother_node.msb)]
+                    root_ope_info_dict[ref_cnt, value] = root_ope_info(root_ope, cond_lsb, diff_list, branch)
 
-            for root_ope in root_opes:
+            for ref_cnt, value in root_ope_info_dict.keys():
+                root_info = root_ope_info_dict[ref_cnt, value]
+                root_ope = root_info.root_ope
                 if str(root_ope.nextnodes[0]) == str(ref_cnt.name):
                     comp_pair = eval_value(root_ope.nextnodes[1])
                 elif str(root_ope.nextnodes[1]) == str(ref_cnt.name):
                     comp_pair = eval_value(root_ope.nextnodes[0])
-                num_list = [comp_pair * (2 ** cond_lsb) * diff for diff in diff_list]
+                num_list = [comp_pair * (2 ** root_info.cond_lsb) * diff for diff in root_info.diff_list]
                 for num in num_list:
                     if num not in self.cnt_event_dict.keys():
                         self.cnt_event_dict[num] = []
-                    self.cnt_event_dict[num].append(term_name + '=' + value.tocode() + ' @' + root_ope.tocode())
-        #print self.name, self.cnt_event_dict
+                    self.cnt_event_dict[num].append(term_name + '=' + value.tocode() + ' @' + root_info.get_ope())
 
     def calc_cnt_period(self):
         if hasattr(self, 'change_cond'):

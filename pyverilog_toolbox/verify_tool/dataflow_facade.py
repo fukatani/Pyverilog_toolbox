@@ -129,7 +129,8 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         BindVisitor._createAlwaysinfo = _createAlwaysinfo.__get__(BindVisitor)
         BindVisitor._is_reset = _is_reset.__get__(BindVisitor)
         #
-        topmodule, terms, binddict, resolved_terms, resolved_binddict, constlist, fsm_vars = self.get_dataflow(code_file_name)
+        (topmodule, terms, binddict, resolved_terms, resolved_binddict,
+         constlist, fsm_vars) = self.get_dataflow(code_file_name)
 
         VerilogControlflowAnalyzer.__init__(self, topmodule, terms, binddict,
         resolved_terms, resolved_binddict,constlist,fsm_vars)
@@ -199,17 +200,6 @@ class dataflow_facade(VerilogControlflowAnalyzer):
                 if str(tree) not in self.term_ref_dict.keys():
                     self.term_ref_dict[str(tree)] = set([])
                 self.term_ref_dict[str(tree)].add(str(tk))
-
-    def make_term_reffered_dict(self):
-        if not self.term_ref_dict:
-            self.make_term_ref_dict
-        self.term_reffered_dict = {}
-        for ref, terms in self.term_ref_dict.items():
-            for term in terms:
-                if not term in self.term_reffered_dict.keys():
-                    self.term_reffered_dict[term] = []
-                self.term_reffered_dict[term].append(ref)
-        #print(self.term_reffered_dict)
 
     def make_extract_dfterm_dict(self):
         return_dict = {}

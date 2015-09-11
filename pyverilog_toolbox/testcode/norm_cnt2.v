@@ -50,6 +50,8 @@ module TOP(CLK, RSTN, UP_ENABLE, UP_ENABLE2, CLEAR);
       now <= 0;
     end else if(up_cnt == 3'd2) begin
       now <= 1;
+    end else if((up_cnt == 2) && (up_cnt2 == 2)) begin
+      now <= 1;
     end
   end
 
