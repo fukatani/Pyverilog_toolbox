@@ -88,11 +88,18 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertEqual(cnt_dict['TOP.up_cnt2'].tostr(),
                         "name: TOP.up_cnt2\ncategory: up counter\nreset val: 0" +
                         "\nmax_val: 4\nmother counter:('TOP.up_cnt',)")
-##        c_analyzer.make_cnt_event_all()
-##        cnt_event_result = str(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict).replace('"','')
-##        print(cnt_event_result)
-##        self.assertEqual(cnt_event_result,
-##                        "{2: [TOP.now=TOP_now @(TOP_up_cnt==3'd2), TOP.now='d1 @(TOP_up_cnt==3'd2)], 4: [TOP.now='d0 @(TOP_up_cnt==3'd4)]}")
+        c_analyzer.make_cnt_event_all()
+        cnt_event_result = str(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict).replace('"','')
+
+        self.assertEqual(set(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict[2]),
+                        set(["TOP.now=TOP_now @(!((TOP_up_cnt=='d2)&&(TOP_up_cnt2=='d2)))",
+                        "TOP.now='d1 @((TOP_up_cnt=='d2)&&(TOP_up_cnt2=='d2))"]))
+        self.assertEqual(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict[4],
+                        ["TOP.now='d0 @(TOP_up_cnt==3'd4)"])
+        self.assertEqual(set(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict[5]),
+                        set(["TOP.up_cnt2='d0 @(!((TOP_up_cnt==3'd5)&&(TOP_up_cnt2!=3'd5)))",
+                        "TOP.up_cnt2=(TOP_up_cnt2+3'd1) @((TOP_up_cnt==3'd5)&&(TOP_up_cnt2!=3'd5))"])
+                        )
 
     def test_cnt_analyzer2(self):
         c_analyzer = CntAnalyzer("norm_cnt.v")

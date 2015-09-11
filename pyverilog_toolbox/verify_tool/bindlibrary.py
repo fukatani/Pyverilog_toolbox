@@ -270,6 +270,8 @@ class MothernodeSetter(BindLibrary) :
             tree_list = f(self, target_tree, tree_list, bit, dftype)
             if tree_list:
                 for tree, bit in tree_list:
+                    #if hasattr(tree, 'mother_node'): continue
+                    #if str(tree) == str(target_tree): continue
                     tree.mother_node = target_tree
             return tree_list
         return helper

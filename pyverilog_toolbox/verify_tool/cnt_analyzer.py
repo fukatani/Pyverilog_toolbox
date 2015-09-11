@@ -22,6 +22,10 @@ import pyverilog.controlflow.splitter as splitter
 
 
 class CntAnalyzer(dataflow_facade):
+    compare_ope = ('Eq', 'NotEq', 'GreaterEq', 'LessEq', 'GreaterThan', 'LessThan')
+    plus_ope = ('NotEq', 'LessEq', 'LessThan')
+    load_ope = ('Eq', 'GreaterEq', 'GreaterThan')
+    eq_ope = ('Eq', 'GreaterEq', 'LessEq')
 
     def analyze_cnt(self):
         self.make_term_ref_dict()
@@ -79,8 +83,7 @@ class CntAnalyzer(dataflow_facade):
         end
         cnt_event_dict[3,'Eq)] = (reg1 <= 1'd1,)
         """
-        #self.make_term_reffered_dict()
-        m_setter = MothernodeSetter(self.binds)
+        m_setter = self.binds
 
         for cnt_name, counter in self.cnt_dict.items():
             cnt_ref_dict = {}
@@ -94,17 +97,20 @@ class CntAnalyzer(dataflow_facade):
                 last_branch_dict = {func[-1]: value for func, value in funcdict.items()}#extract last condition
 
                 cnt_ref_branch=[]
-                m_setter.disable_dfxxx_eq()
-                for branch, value in last_branch_dict.items():
-                    ref_cnt_set = m_setter.extract_all_dfxxx(branch, set([]), 0, pyverilog.dataflow.dataflow.DFTerminal)
-                    ref_cnt_set = set([term[0] for term in ref_cnt_set])
-                    ref_cnt_set = set([term for term in ref_cnt_set if str(term) == cnt_name])
+                for cond, value in last_branch_dict.items():
+                    ref_cnt_set = []
+                    opes = m_setter.extract_all_dfxxx(cond, set([]), 0, DFOperator)
+                    opes = set([ope[0] for ope in opes])
+                    for ope in opes:
+                        if not ope.operator in self.compare_ope: continue
+                        if cnt_name != str(ope.children()[0]): continue
+                        ope.children()[0].mother_node = ope
+                        ref_cnt_set.append(ope.children()[0])
                     if ref_cnt_set:
-                        cnt_ref_branch.append((ref_cnt_set, value, branch))
+                        cnt_ref_branch.append((ref_cnt_set, value, cond))
                 if cnt_ref_branch:
                     cnt_ref_dict[term_name] = cnt_ref_branch
             counter.make_cnt_event_dict(cnt_ref_dict)
-        m_setter.enable_dfxxx_eq()
 
     def get_reset_value(self, cnt_name, target_tree, reset_name):
         if target_tree.condnode.operator == 'Ulnot':
@@ -267,19 +273,6 @@ class cnt_profile(object):
                 self.branch = branch
             def get_ope(self):
                 return self.branch.tocode()
-##                if not self.inverted:
-##                    return self.root_ope.tocode()
-##                else:
-##                    if self.root_ope.operator == 'Eq':
-##                        return self.root_ope.tocode().replace('==','!=')
-##                    elif self.root_ope.operator == 'NotEq':
-##                        return self.root_ope.tocode().replace('!=','==')
-##                    elif '>' in self.root_ope.tocode():
-##                        return self.root_ope.tocode().replace('>','<')
-##                    elif '<' in self.root_ope.tocode():
-##                        return self.root_ope.tocode().replace('<','>')
-##                    else:
-##                        raise Exception('Unexpected exception')
 
         self.cnt_event_dict = {}
         for term_name, ref_cnt_set in cnt_ref_dict.items():
