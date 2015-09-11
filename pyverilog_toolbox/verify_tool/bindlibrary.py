@@ -27,10 +27,10 @@ class BindLibrary(object):
             """ [FUNCTIONS] for getScopeChaindict
             make {string: ScopeChain, ...} from binddict
             """
-            return_dict = {}
+            scope_dict = {}
             for scope in terms.keys():
-                return_dict[str(scope)] = scope
-            return return_dict
+                scope_dict[str(scope)] = scope
+            return scope_dict
 
         self._binddict = binddict
         self._terms = terms
@@ -44,12 +44,12 @@ class BindLibrary(object):
         Using self.cache.
         """
         def helper(self, target_tree, tree_list, bit, dftype):
-            if dftype == pyverilog.dataflow.dataflow.DFTerminal:
+            if dftype == DFTerminal:
                 if (target_tree,bit) not in self.cache:
                     self.cache[(target_tree,bit)] = f(self, target_tree, set([]), bit, dftype)
-                return tree_list.union(self.cache[(target_tree,bit)])
+                return tree_list.union(self.cache[(target_tree, bit)])
             else:
-                return f(self, target_tree, tree_list,bit,dftype)
+                return f(self, target_tree, tree_list, bit, dftype)
         return helper
 
     @dfx_memoize
@@ -61,7 +61,7 @@ class BindLibrary(object):
         bit: signal bit pointer
         dftype: DFOperator or DFIntConst or ,...
         """
-        if dftype == pyverilog.dataflow.dataflow.DFTerminal and isinstance(target_tree, pyverilog.dataflow.dataflow.DFTerminal):
+        if dftype == DFTerminal and isinstance(target_tree, DFTerminal):
             target_scope = self.get_scope(target_tree)
             if target_scope in self._binddict.keys():
                 target_bind, target_term_lsb = self.get_next_bind(target_scope, bit)
@@ -74,7 +74,7 @@ class BindLibrary(object):
                 tree_list.add((target_tree, bit))
 
         if hasattr(target_tree, "nextnodes"):
-            if isinstance(target_tree, pyverilog.dataflow.dataflow.DFConcat):
+            if isinstance(target_tree, DFConcat):
                 now_max_bit = 0
                 now_min_bit = 0
                 for nextnode in reversed(target_tree.nextnodes):
@@ -85,22 +85,21 @@ class BindLibrary(object):
                     now_min_bit = now_max_bit + 1
             else:
                 for nextnode in target_tree.nextnodes:
-                    if isinstance(target_tree, pyverilog.dataflow.dataflow.DFBranch) and nextnode == target_tree.condnode:
+                    if isinstance(target_tree, DFBranch) and nextnode == target_tree.condnode:
                         tree_list = self.extract_all_dfxxx(nextnode,tree_list, 0, dftype)
                     else:
                         tree_list = self.extract_all_dfxxx(nextnode,tree_list, bit, dftype)
-        elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFBranch):
+        elif isinstance(target_tree, DFBranch):
             tree_list = self.extract_all_dfxxx(target_tree.condnode, tree_list, 0, dftype)
             tree_list = self.extract_all_dfxxx(target_tree.truenode, tree_list, bit, dftype)
             tree_list = self.extract_all_dfxxx(target_tree.falsenode, tree_list, bit, dftype)
-        elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFTerminal):
+        elif isinstance(target_tree, DFTerminal):
             target_scope = self.get_scope(target_tree)
             if target_scope in self._binddict.keys():
                 target_bind, target_term_lsb = self.get_next_bind(target_scope, bit)
                 if target_bind.isCombination():
                     tree_list = self.extract_all_dfxxx(target_bind.tree, tree_list, bit, dftype)
-        elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFPartselect):
-            #ref_bit = eval_value(target_tree.lsb) + bit
+        elif isinstance(target_tree, DFPartselect):
             ref_bit = eval_value(target_tree.lsb) + bit - eval_value(self._terms[self.scope_dict[str(target_tree.var)]].lsb)
             tree_list = self.extract_all_dfxxx(target_tree.var, tree_list, ref_bit, dftype)
         return tree_list
@@ -122,7 +121,7 @@ class BindLibrary(object):
             raise CombLoopException(str(start_tree) + ' may be combinational loop, or too complex logic (concern over 1000 variable).')
 
         if hasattr(target_tree, "nextnodes"):
-            if isinstance(target_tree, pyverilog.dataflow.dataflow.DFConcat):
+            if isinstance(target_tree, DFConcat):
                 now_max_bit = 0
                 now_min_bit = 0
                 for nextnode in reversed(target_tree.nextnodes):
@@ -133,21 +132,21 @@ class BindLibrary(object):
                     now_min_bit = now_max_bit + 1
             else:
                 for nextnode in target_tree.nextnodes:
-                    if isinstance(target_tree, pyverilog.dataflow.dataflow.DFBranch) and nextnode == target_tree.condnode:
+                    if isinstance(target_tree, DFBranch) and nextnode == target_tree.condnode:
                         self.search_combloop(nextnode, 0, start_tree, start_bit, find_cnt, rec_call_cnt)
                     else:
                         self.search_combloop(nextnode, bit, start_tree, start_bit, find_cnt, rec_call_cnt)
-        elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFBranch):
+        elif isinstance(target_tree, DFBranch):
             self.search_combloop(target_tree.condnode, 0, start_tree, start_bit, find_cnt, rec_call_cnt)
             self.search_combloop(target_tree.truenode, bit, start_tree, start_bit, find_cnt, rec_call_cnt)
             self.search_combloop(target_tree.falsenode, bit, start_tree, start_bit, find_cnt, rec_call_cnt)
-        elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFTerminal):
+        elif isinstance(target_tree, DFTerminal):
             target_scope = self.get_scope(target_tree)
             if target_scope in self._binddict.keys():
                 target_bind, target_term_lsb = self.get_next_bind(target_scope, bit)
                 if target_bind.isCombination():
                     self.search_combloop(target_bind.tree, bit, start_tree, start_bit, find_cnt, rec_call_cnt)
-        elif isinstance(target_tree, pyverilog.dataflow.dataflow.DFPartselect):
+        elif isinstance(target_tree, DFPartselect):
             ref_bit = eval_value(target_tree.lsb) + bit - eval_value(self._terms[self.scope_dict[str(target_tree.var)]].lsb)
             self.search_combloop(target_tree.var, ref_bit, start_tree, start_bit, find_cnt, rec_call_cnt)
         return
@@ -171,7 +170,6 @@ class BindLibrary(object):
         if scope in self._binddict.keys():
             target_binds = self._binddict[scope]
             target_bind_index = self.get_bind_index(target_binds, bit + eval_value(self._terms[scope].lsb), self._terms[scope])
-            #target_bind_index = self.get_bind_index(target_binds, bit, self._terms[scope])
             target_bind = target_binds[target_bind_index]
             return target_bind, eval_value(self._terms[scope].lsb)
         else:
@@ -197,22 +195,22 @@ class BindLibrary(object):
 
     def get_bit_width_from_tree(self, tree):
         onebit_comb = ('Ulnot','Unot','Eq', 'Ne','Lor','Land','Unand','Uor','Unor','Uxor','Uxnor')
-        if isinstance(tree, pyverilog.dataflow.dataflow.DFTerminal):
+        if isinstance(tree, DFTerminal):
             term = self._terms[self.get_scope(tree)]
             return eval_value(term.msb)  + 1
-        elif isinstance(tree, pyverilog.dataflow.dataflow.DFPartselect):
+        elif isinstance(tree, DFPartselect):
             return eval_value(tree.msb) - eval_value(tree.lsb) + 1
-        elif isinstance(tree, pyverilog.dataflow.dataflow.DFOperator):
+        elif isinstance(tree, DFOperator):
             if tree.operator in onebit_comb:
                 return 1
             else:
                 each_sizes = (self.get_bit_width_from_tree(nextnode) for nextnode in tree.nextnodes)
                 return min(each_sizes)
-        elif isinstance(tree, pyverilog.dataflow.dataflow.DFIntConst):
+        elif isinstance(tree, DFIntConst):
             return tree.width()
-        elif isinstance(tree, pyverilog.dataflow.dataflow.DFConcat):
+        elif isinstance(tree, DFConcat):
             return sum([self.get_bit_width_from_tree(nextnode) for nextnode in tree.nextnodes])
-        elif isinstance(tree, pyverilog.dataflow.dataflow.DFEvalValue):
+        elif isinstance(tree, DFEvalValue):
             return tree.width
         else:
             raise IRREGAL_CODE_FORM("unexpected concat node")
@@ -220,7 +218,7 @@ class BindLibrary(object):
     def walk_reg_each_bit(self):
         for tk, tv in sorted(self._terms.items(), key=lambda x:len(x[0])):
             if tk in self._binddict.keys():
-                for bvi in self._binddict[tk]:#process for each always block
+                for bvi in self._binddict[tk]: #process for each always block
                     bind_lsb = self.get_bind_lsb(bvi)
                     bind_msb = self.get_bind_msb(bvi)
                     for bit in range(bind_lsb, bind_msb + 1):
@@ -330,7 +328,8 @@ def DFConstant_eq_org(self, other):
 
 def DFEvalValue_eq_org(self, other):
     if type(self) != type(other): return False
-    return self.value == other.value and self.width == other.width and self.isfloat == other.isfloat and self.isstring == other.isstring
+    return (self.value == other.value and self.width == other.width and
+            self.isfloat == other.isfloat and self.isstring == other.isstring)
 
 def DFUndefined_eq_org(self, other):
     if type(self) != type(other): return False
@@ -346,7 +345,8 @@ def DFTerminal_eq_org(self, other):
 
 def DFBranch_eq_org(self, other):
     if type(self) != type(other): return False
-    return self.condnode == other.condnode and self.truenode == other.truenode and self.falsenode == other.falsenode
+    return (self.condnode == other.condnode and self.truenode == other.truenode and
+            self.falsenode == other.falsenode)
 
 def DFOperator_eq_org(self, other):
     if type(self) != type(other): return False
@@ -365,32 +365,30 @@ def DFConcat_eq_org(self, other):
     return self.nextnodes == other.nextnodes
 
 def eval_value(tree):
-    if isinstance(tree, pyverilog.dataflow.dataflow.DFOperator):
+    if isinstance(tree, DFOperator):
         for nextnode in self.nextnodes:
-            assert(isinstance(nextnode, pyverilog.dataflow.dataflow.DFEvalValue)
-                or isinstance(nextnode, pyverilog.dataflow.dataflow.DFIntConst)
-                or isinstance(nextnode, pyverilog.dataflow.dataflow.DFOperator)
-                or isinstance(nextnode, pyverilog.dataflow.dataflow.DFTerminal))
+            assert(isinstance(nextnode, DFEvalValue)
+                or isinstance(nextnode, DFIntConst)
+                or isinstance(nextnode, DFOperator)
+                or isinstance(nextnode, DFTerminal))
         if self.operator == 'Plus':
             return eval_value(nextnodes[0]) + eval_value(nextnodes[1])
         elif self.operator == 'Minus':
             return eval_value(nextnodes[0]) - eval_value(nextnodes[1])
         elif self.operator == 'Times':
             return eval_value(nextnodes[0]) * eval_value(nextnodes[1])
-        else:#unimplemented
-            raise Exception
-    elif isinstance(tree, pyverilog.dataflow.dataflow.DFTerminal):
+        else:
+            raise Exception('unimplemented for this type tree' + str(type(tree)))
+    elif isinstance(tree, DFTerminal):
         if self.get_scope(scopedict) in binddict.keys():
             return binddict[self.get_scope(scopedict)][0].tree.eval()
         else:
             raise verror.ImplementationError()
-    elif isinstance(tree, pyverilog.dataflow.dataflow.DFIntConst):
+    elif isinstance(tree, DFIntConst):
         return tree.eval()
-    elif isinstance(tree, pyverilog.dataflow.dataflow.DFEvalValue):
+    elif isinstance(tree, DFEvalValue):
         return tree.value
     elif tree is None:
         return 0
     else:
         raise Exception('Unexpected error@bindlibrary')
-
-

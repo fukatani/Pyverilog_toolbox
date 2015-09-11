@@ -10,6 +10,7 @@
 
 import sys
 import os
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
@@ -20,7 +21,6 @@ from pyverilog_toolbox.verify_tool.cnt_analyzer import *
 from pyverilog_toolbox.verify_tool.codeclone_finder import CodeCloneFinder
 from pyverilog_toolbox.verify_tool.unreferenced_finder import UnreferencedFinder
 from pyverilog_toolbox.verify_tool.metrics_calculator import MetricsCalculator
-import unittest
 
 class TestSequenceFunctions(unittest.TestCase):
     def setUp(self):
