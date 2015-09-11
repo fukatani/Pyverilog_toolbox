@@ -281,27 +281,8 @@ class cnt_profile(object):
                 if len(ref_cnt) != 1:
                     raise Exception('Found redundunt condition description @' + term_name)
                 ref_cnt = tuple(ref_cnt)[0]
-                if ref_cnt.mother_node.operator in self.compare_ope:
-                    root_ope_info_dict[ref_cnt, value] = root_ope_info(ref_cnt.mother_node, 0, [1,], branch)
-                elif ref_cnt.mother_node.operator == 'Ulnot' and ref_cnt.mother_node.children()[0].operator in self.compare_ope:
-                    root_ope_info_dict[ref_cnt, value] = root_ope_info(ref_cnt.mother_node.children()[0], 0, [1,], branch)
-                elif isinstance(ref_cnt.mother_node, pyverilog.dataflow.dataflow.DFPartselect):
-                    if ref_cnt.mother_node.mother_node.operator in self.compare_ope:
-                        root_ope = ref_cnt.mother_node.mother_node
-                        cond_lsb = ref_cnt.mother_node.lsb
-                        inverted = False
-                    elif ref_cnt.mother_node.mother_node.operator == 'Ulnot' and \
-                        ref_cnt.mother_node.mother_node.children()[0].operator in self.compare_ope:
-                            root_ope = ref_cnt.mother_node.mother_node.children()[0]
-                            cond_lsb = ref_cnt.mother_node.children()[0].lsb
-                            inverted = True
-                    else:
-                        continue
-                    if ref_cnt.mother_node.msb == self.msb:
-                        diff_list = [1,]
-                    else:
-                        diff_list = [i for i in range(1,self.msb - ref_cnt.mother_node.msb)]
-                    root_ope_info_dict[ref_cnt, value] = root_ope_info(root_ope, cond_lsb, diff_list, branch)
+                root_ope = ref_cnt.mother_node
+                root_ope_info_dict[ref_cnt, value] = root_ope_info(root_ope, 0, [1,], branch)
 
             for ref_cnt, value in root_ope_info_dict.keys():
                 root_info = root_ope_info_dict[ref_cnt, value]
@@ -361,6 +342,6 @@ class down_cnt_profile(cnt_profile):
         return 2 ** (self.msb + 1) - 1
 
 if __name__ == '__main__':
-    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt2.v")
+    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt3.v")
     cnt_analyzer.show()
 
