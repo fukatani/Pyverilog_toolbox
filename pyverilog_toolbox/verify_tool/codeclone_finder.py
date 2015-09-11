@@ -13,7 +13,7 @@ import collections
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
-import pyverilog.utils.version
+#import pyverilog.utils.version
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
 from pyverilog_toolbox.verify_tool.bindlibrary import *
@@ -53,6 +53,7 @@ class CodeCloneFinder(dataflow_facade):
             code_dict[tk, bit] = target_tree.tocode()
 
         #sort for assign code(same assign reg must line up next to)
+        #and assure output order for test: + str(t[0])
         cd_order = collections.OrderedDict(sorted(code_dict.items(), key=lambda t: t[1] + str(t[0])))
         clone_regs = []
         cd_values = list(cd_order.values())
@@ -92,7 +93,7 @@ class CodeCloneFinder(dataflow_facade):
         def judge_invert_reg(values, target_values):
             assert len(values) == len(target_values)
             for val, target_val in zip(values, target_values):
-                if isinstance(val, pyverilog.dataflow.dataflow.DFEvalValue) and isinstance(target_val, pyverilog.dataflow.dataflow.DFEvalValue):
+                if isinstance(val, DFEvalValue) and isinstance(target_val, DFEvalValue):
                     if eval_value(val) == eval_value(target_val):
                         return False
                 elif str(val) == 'Ulnot':

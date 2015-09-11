@@ -13,7 +13,6 @@ from collections import OrderedDict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
-import pyverilog.utils.version
 from pyverilog.utils.util import *
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
@@ -135,7 +134,7 @@ class MetricsCalculator(dataflow_facade):
         for tv,tk in self.binds.walk_signal():
             if not 'Function' in tv.termtype: continue
             for i, bind in enumerate(self.resolved_binddict[tk]):
-                trees = self.binds.extract_all_dfxxx(bind.tree, set([]), 0, pyverilog.dataflow.dataflow.DFTerminal)
+                trees = self.binds.extract_all_dfxxx(bind.tree, set([]), 0, DFTerminal)
                 if len(trees) > 1: # omit 1 variable function
                     func_metrics_elements[str(getScope(tk)), i] = func_elements()
                     func_metrics_elements[str(getScope(tk)), i].set_var(len(trees))
@@ -178,7 +177,7 @@ class MetricsCalculator(dataflow_facade):
         """ [FUNCTIONS]
         Count up depth of if/else/case nest for register/function metrics.
         """
-        if isinstance(tree, pyverilog.dataflow.dataflow.DFBranch):
+        if isinstance(tree, DFBranch):
             count += 1
             count, max_count = self.walk_for_count_nest(tree.truenode, count, max_count)
             count -= 1

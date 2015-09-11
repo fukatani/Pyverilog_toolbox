@@ -13,14 +13,11 @@ import collections
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
-import pyverilog.utils.version
 from pyverilog.utils.util import *
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
 from pyverilog_toolbox.verify_tool.bindlibrary import *
-
 import pyverilog.controlflow.splitter as splitter
-
 
 class UnreferencedFinder(dataflow_facade):
 
