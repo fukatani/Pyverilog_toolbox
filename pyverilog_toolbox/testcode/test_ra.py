@@ -117,8 +117,8 @@ class TestSequenceFunctions(unittest.TestCase):
         cnt_dict = c_analyzer.analyze_cnt()
         c_analyzer.make_cnt_event_all()
         cnt_event_result = str(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict).replace('"','')
-        self.assertEqual(cnt_event_result,
-            "{2: [TOP.now='d1 @(!(TOP_up_cnt['d1]=='d2)), TOP.now='d0 @(TOP_up_cnt['d1]=='d2)]}")
+        self.assertEqual(set(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict[2]),
+            set(["TOP.now='d1 @(!(TOP_up_cnt['d1]=='d2))", "TOP.now='d0 @(TOP_up_cnt['d1]=='d2)"]))
 
     def test_normal(self):
         ranalyzer = RegMapAnalyzer("regmap.v", "setup.txt")
