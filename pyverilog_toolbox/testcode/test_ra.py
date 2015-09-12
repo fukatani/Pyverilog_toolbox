@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # test_ra.py
 #
-#
+# the test for all pyverilog_toolbox function
 #
 # Copyright (C) 2015, Ryosuke Fukatani
 # License: Apache 2.0
@@ -12,7 +12,7 @@ import sys
 import os
 import unittest
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pyverilog_toolbox.verify_tool.regmap_analyzer import *
 from pyverilog_toolbox.verify_tool.combloop_finder import *
@@ -89,8 +89,6 @@ class TestSequenceFunctions(unittest.TestCase):
                         "name: TOP.up_cnt2\ncategory: up counter\nreset val: 0" +
                         "\nmax_val: 4\nmother counter:('TOP.up_cnt',)")
         c_analyzer.make_cnt_event_all()
-        cnt_event_result = str(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict).replace('"','')
-
         #maybe depend on funcdict
         ok1 = (set(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict[2]) ==
                 set(["TOP.now=TOP_now @(!((TOP_up_cnt=='d2)&&(TOP_up_cnt2=='d2)))",
@@ -113,6 +111,14 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertEqual(cnt_dict['TOP.up_cnt'].tostr(),
                         "name: TOP.up_cnt\ncategory: up counter\nreset val: 0" +
                         "\nmax_val: 7\nmother counter:()")
+
+    def test_cnt_analyzer3(self):
+        c_analyzer = CntAnalyzer("norm_cnt3.v")
+        cnt_dict = c_analyzer.analyze_cnt()
+        c_analyzer.make_cnt_event_all()
+        cnt_event_result = str(c_analyzer.cnt_dict['TOP.up_cnt'].cnt_event_dict).replace('"','')
+        self.assertEqual(cnt_event_result,
+            "{2: [TOP.now='d1 @(!(TOP_up_cnt['d1]=='d2)), TOP.now='d0 @(TOP_up_cnt['d1]=='d2)]}")
 
     def test_normal(self):
         ranalyzer = RegMapAnalyzer("regmap.v", "setup.txt")

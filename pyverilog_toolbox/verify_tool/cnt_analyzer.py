@@ -10,9 +10,8 @@
 
 import sys
 import os
-import pyverilog
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
@@ -91,11 +90,20 @@ class CntAnalyzer(dataflow_facade):
                 opes = set([ope[0] for ope in opes])
                 for ope in opes:
                     if not ope.operator in self.compare_ope: continue
-                    if cnt_name != str(ope.children()[0]): continue
-                    ope.children()[0].mother_node = ope
-                    reffered_cnt_set.append(ope.children()[0])
+                    if cnt_name == str(ope.children()[0]):
+                        ope.comp_target = ope.children()[0]
+                        lsb = 0
+                    elif (isinstance(ope.children()[0], DFPartselect) and
+                        cnt_name == str(ope.children()[0].var)):
+                        ope.comp_target = ope.children()[0].var
+                        lsb = eval_value(ope.children()[0].lsb)
+                    else:
+                        continue
+                    ope.comp_value = eval_value(ope.children()[1])
+                    ope.comp_target.mother_node = ope
+                    reffered_cnt_set.append(ope.comp_target)
                 if reffered_cnt_set:
-                    cnt_ref_info.append((reffered_cnt_set, term_value, cond))
+                    cnt_ref_info.append((reffered_cnt_set, term_value, cond, lsb))
             return cnt_ref_info
 
         for cnt_name, counter in self.cnt_dict.items():
@@ -130,15 +138,14 @@ class CntAnalyzer(dataflow_facade):
 
     def active_ope(self, node, **kwargs):
         if 'op' in kwargs.keys():
-            return isinstance(node, pyverilog.dataflow.dataflow.DFOperator) and node.operator == kwargs['op']
+            return isinstance(node, DFOperator) and node.operator == kwargs['op']
         raise Exception('Need op arg.')
 
     def active_load_const(self, node):
         """ [FUNCTION]
         Judge loading const or not.
         """
-        return (isinstance(node, pyverilog.dataflow.dataflow.DFIntConst) or
-                isinstance(node, pyverilog.dataflow.dataflow.DFEvalValue))
+        return isinstance(node, DFIntConst) or isinstance(node, DFEvalValue)
 
     def cnt_factory(self, name, up_cond, down_cond):
         if up_cond and down_cond:
@@ -276,27 +283,22 @@ class cnt_profile(object):
                 return self.branch.tocode()
 
         self.cnt_event_dict = {}
-        for term_name, ref_cnt_set in cnt_ref_dict.items():
+        for term_name, cnt_ref_info in cnt_ref_dict.items():
             root_ope_info_dict = {}
-            for ref_cnt, term_value, branch in ref_cnt_set:
+            for ref_cnt, term_value, branch, lsb in cnt_ref_info:
                 if len(ref_cnt) != 1:
                     raise Exception('Found redundunt condition description @' + term_name)
                 ref_cnt = tuple(ref_cnt)[0]
                 root_ope = ref_cnt.mother_node
-                root_ope_info_dict[ref_cnt, term_value] = root_ope_info(root_ope, 0, [1,], branch)
+                root_ope_info_dict[ref_cnt, term_value] = root_ope_info(root_ope, 0, lsb, branch)
 
             for ref_cnt, term_value in root_ope_info_dict.keys():
                 root_info = root_ope_info_dict[ref_cnt, term_value]
                 root_ope = root_info.root_ope
-                if str(root_ope.nextnodes[0]) == str(ref_cnt):
-                    comp_pair = eval_value(root_ope.nextnodes[1])
-                elif str(root_ope.nextnodes[1]) == str(ref_cnt):
-                    comp_pair = eval_value(root_ope.nextnodes[0])
-                num_list = [comp_pair * (2 ** root_info.cond_lsb) * diff for diff in root_info.diff_list]
-                for num in num_list:
-                    if num not in self.cnt_event_dict.keys():
-                        self.cnt_event_dict[num] = []
-                    self.cnt_event_dict[num].append(term_name + '=' + term_value.tocode() + ' @' + root_info.get_ope())
+                num = root_ope.comp_value * (2 ** root_info.cond_lsb)
+                if num not in self.cnt_event_dict.keys():
+                    self.cnt_event_dict[num] = []
+                self.cnt_event_dict[num].append(term_name + '=' + term_value.tocode() + ' @' + root_info.get_ope())
 
     def calc_cnt_period(self):
         if hasattr(self, 'change_cond'):
@@ -343,6 +345,6 @@ class down_cnt_profile(cnt_profile):
         return 2 ** (self.msb + 1) - 1
 
 if __name__ == '__main__':
-    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt2.v")
+    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt3.v")
     cnt_analyzer.show()
 
