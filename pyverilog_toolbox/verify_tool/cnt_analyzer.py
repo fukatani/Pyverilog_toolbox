@@ -83,7 +83,20 @@ class CntAnalyzer(dataflow_facade):
         end
         cnt_event_dict[3,'Eq)] = (reg1 <= 1'd1,)
         """
-        m_setter = self.binds
+        def make_cnt_ref_info(cond_dict):
+            cnt_ref_info = []
+            for cond, term_value in cond_dict.items():
+                reffered_cnt_set = []
+                opes = self.binds.extract_all_dfxxx(cond, set([]), 0, DFOperator)
+                opes = set([ope[0] for ope in opes])
+                for ope in opes:
+                    if not ope.operator in self.compare_ope: continue
+                    if cnt_name != str(ope.children()[0]): continue
+                    ope.children()[0].mother_node = ope
+                    reffered_cnt_set.append(ope.children()[0])
+                if reffered_cnt_set:
+                    cnt_ref_info.append((reffered_cnt_set, term_value, cond))
+            return cnt_ref_info
 
         for cnt_name, counter in self.cnt_dict.items():
             cnt_ref_dict = {}
@@ -94,22 +107,10 @@ class CntAnalyzer(dataflow_facade):
                 funcdict = splitter.split(target_tree)
                 funcdict = splitter.remove_reset_condition(funcdict)
                 if not funcdict: continue
-                last_branch_dict = {func[-1]: value for func, value in funcdict.items()}#extract last condition
-
-                cnt_ref_branch=[]
-                for cond, value in last_branch_dict.items():
-                    ref_cnt_set = []
-                    opes = m_setter.extract_all_dfxxx(cond, set([]), 0, DFOperator)
-                    opes = set([ope[0] for ope in opes])
-                    for ope in opes:
-                        if not ope.operator in self.compare_ope: continue
-                        if cnt_name != str(ope.children()[0]): continue
-                        ope.children()[0].mother_node = ope
-                        ref_cnt_set.append(ope.children()[0])
-                    if ref_cnt_set:
-                        cnt_ref_branch.append((ref_cnt_set, value, cond))
-                if cnt_ref_branch:
-                    cnt_ref_dict[term_name] = cnt_ref_branch
+                cond_dict = {func[-1]: term_value for func, term_value in funcdict.items()}#extract last condition
+                cnt_ref_info = make_cnt_ref_info(cond_dict)
+                if cnt_ref_info:
+                    cnt_ref_dict[term_name] = cnt_ref_info
             counter.make_cnt_event_dict(cnt_ref_dict)
 
     def get_reset_value(self, cnt_name, target_tree, reset_name):
@@ -277,25 +278,25 @@ class cnt_profile(object):
         self.cnt_event_dict = {}
         for term_name, ref_cnt_set in cnt_ref_dict.items():
             root_ope_info_dict = {}
-            for ref_cnt, value, branch in ref_cnt_set:
+            for ref_cnt, term_value, branch in ref_cnt_set:
                 if len(ref_cnt) != 1:
                     raise Exception('Found redundunt condition description @' + term_name)
                 ref_cnt = tuple(ref_cnt)[0]
                 root_ope = ref_cnt.mother_node
-                root_ope_info_dict[ref_cnt, value] = root_ope_info(root_ope, 0, [1,], branch)
+                root_ope_info_dict[ref_cnt, term_value] = root_ope_info(root_ope, 0, [1,], branch)
 
-            for ref_cnt, value in root_ope_info_dict.keys():
-                root_info = root_ope_info_dict[ref_cnt, value]
+            for ref_cnt, term_value in root_ope_info_dict.keys():
+                root_info = root_ope_info_dict[ref_cnt, term_value]
                 root_ope = root_info.root_ope
-                if str(root_ope.nextnodes[0]) == str(ref_cnt.name):
+                if str(root_ope.nextnodes[0]) == str(ref_cnt):
                     comp_pair = eval_value(root_ope.nextnodes[1])
-                elif str(root_ope.nextnodes[1]) == str(ref_cnt.name):
+                elif str(root_ope.nextnodes[1]) == str(ref_cnt):
                     comp_pair = eval_value(root_ope.nextnodes[0])
                 num_list = [comp_pair * (2 ** root_info.cond_lsb) * diff for diff in root_info.diff_list]
                 for num in num_list:
                     if num not in self.cnt_event_dict.keys():
                         self.cnt_event_dict[num] = []
-                    self.cnt_event_dict[num].append(term_name + '=' + value.tocode() + ' @' + root_info.get_ope())
+                    self.cnt_event_dict[num].append(term_name + '=' + term_value.tocode() + ' @' + root_info.get_ope())
 
     def calc_cnt_period(self):
         if hasattr(self, 'change_cond'):
@@ -342,6 +343,6 @@ class down_cnt_profile(cnt_profile):
         return 2 ** (self.msb + 1) - 1
 
 if __name__ == '__main__':
-    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt3.v")
+    cnt_analyzer = CntAnalyzer("../testcode/norm_cnt2.v")
     cnt_analyzer.show()
 
