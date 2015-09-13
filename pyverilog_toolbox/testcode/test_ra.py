@@ -29,8 +29,7 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_metrics(self):
         m_calculator = MetricsCalculator("metrics_test.v")
         m_metrics, _, _ = m_calculator.synth_profile()
-        self.assertEqual(m_metrics.m_ordered['TOP'], 27)
-        self.assertEqual(m_metrics.m_ordered['TOP.sub'], 19)
+        self.assertDictEqual(m_metrics.m_ordered, {'TOP': 27, 'TOP.sub': 19, 'TOP.ccc': 16})
 
     def test_metrics2(self):
         m_calculator = MetricsCalculator("metrics_test2.v")
@@ -56,9 +55,11 @@ class TestSequenceFunctions(unittest.TestCase):
                         ['((TOP.reg1, 0), (TOP.reg3, 0))', '((TOP.reg3, 0), (TOP.sub.reg1, 0))'])
 
         inv_reg_description = set([str(inv_pair) for inv_pair in cc_finder.search_invert_regs()])
-        ok1 = ('((TOP.reg1, 0), (TOP.reg4, 0))' in inv_reg_description) or ('((TOP.reg4, 0), (TOP.reg1, 0))' in inv_reg_description)
-        ok2 = ('((TOP.reg3, 0), (TOP.reg4, 0))' in inv_reg_description) or ('((TOP.reg4, 0), (TOP.reg3, 0))' in inv_reg_description)
-        ok3 = ('((TOP.sub.reg1, 0), (TOP.reg4, 0))' in inv_reg_description) or ('((TOP.reg4, 0), (TOP.sub.reg1, 0))' in inv_reg_description)
+        print('aaa')
+        print(inv_reg_description)
+        ok1 = ('((TOP.reg1, 0), (TOP.reg4, 0))' in inv_reg_description)
+        ok2 = ('((TOP.reg3, 0), (TOP.reg4, 0))' in inv_reg_description)
+        ok3 = ('((TOP.reg4, 0), (TOP.sub.reg1, 0))' in inv_reg_description)
         self.assertTrue(ok1 or ok2 or ok3)
 
     def test_unreferenced(self):
@@ -137,8 +138,9 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_partselect(self):
         df = dataflow_facade("complex_partselect.v")
         term_dict = df.make_extract_dfterm_dict()
-        self.assertEqual(term_dict[('TOP.reg0', 3)], set(['(TOP.WRITE_DATA, 1)', '(TOP.WRITE, 0)', '(TOP.reg0, 3)']))
-        self.assertEqual(term_dict[('TOP.reg0', 4)], set(['(TOP.WRITE_DATA, 2)', '(TOP.WRITE, 0)', '(TOP.reg0, 4)']))
+        self.assertDictEqual(term_dict,
+        {('TOP.reg0', 3): set(['(TOP.WRITE_DATA, 1)', '(TOP.WRITE, 0)', '(TOP.reg0, 3)']),
+        ('TOP.reg0', 4): set(['(TOP.WRITE_DATA, 2)', '(TOP.WRITE, 0)', '(TOP.reg0, 4)'])})
 
     def test_split2(self):
         ranalyzer = RegMapAnalyzer("regmap2.v", "setup.txt")
