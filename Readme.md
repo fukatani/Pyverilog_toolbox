@@ -21,8 +21,6 @@ Installation
 
 If you want to use Pyverilog as a general library, you can install on your environment by using setup.py. 
 
-If you use Python 2.7,
-
 ```
 python setup.py install
 ```
@@ -31,8 +29,6 @@ Or you can use pip
 ```
 pip install pyverilog_toolbox
 ```
-
-Python 3.x is not tried by author.
 
 
 Features
