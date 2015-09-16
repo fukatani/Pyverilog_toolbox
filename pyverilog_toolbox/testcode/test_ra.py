@@ -55,12 +55,9 @@ class TestSequenceFunctions(unittest.TestCase):
                         ['((TOP.reg1, 0), (TOP.reg3, 0))', '((TOP.reg3, 0), (TOP.sub.reg1, 0))'])
 
         inv_reg_description = set([str(inv_pair) for inv_pair in cc_finder.search_invert_regs()])
-        print('aaa')
-        print(inv_reg_description)
-        ok1 = ('((TOP.reg1, 0), (TOP.reg4, 0))' in inv_reg_description)
-        ok2 = ('((TOP.reg3, 0), (TOP.reg4, 0))' in inv_reg_description)
-        ok3 = ('((TOP.reg4, 0), (TOP.sub.reg1, 0))' in inv_reg_description)
-        self.assertTrue(ok1 or ok2 or ok3)
+        self.assertEqual(set(['((TOP.reg1, 0), (TOP.reg4, 0))',
+                              '((TOP.reg3, 0), (TOP.reg4, 0))',
+                              '((TOP.reg4, 0), (TOP.sub.reg1, 0))']), inv_reg_description)
 
     def test_unreferenced(self):
         u_finder = UnreferencedFinder("unreferenced_variables.v")
