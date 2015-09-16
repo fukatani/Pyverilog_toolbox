@@ -29,7 +29,7 @@ class MetricsCalculator(dataflow_facade):
         parameter_file: metrics calculation parameter file
         result_file: metrics calculation result
         """
-        dataflow_facade.__init__(self, code_file_name)
+        dataflow_facade.__init__(self, code_file_name, topmodule=topmodule)
         self.result_file_name = result_file
         self.function_metrics_elements = {}
 
