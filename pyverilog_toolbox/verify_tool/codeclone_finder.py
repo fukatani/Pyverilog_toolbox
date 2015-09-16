@@ -8,12 +8,10 @@
 
 import sys
 import os
-import copy
-import collections
+from collections import OrderedDict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
-#import pyverilog.utils.version
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
 from pyverilog_toolbox.verify_tool.bindlibrary import *
@@ -54,7 +52,7 @@ class CodeCloneFinder(dataflow_facade):
 
         #sort for assign code(same assign reg must line up next to)
         #and assure output order for test: + str(t[0])
-        cd_order = collections.OrderedDict(sorted(code_dict.items(), key=lambda t: t[1] + str(t[0])))
+        cd_order = OrderedDict(sorted(code_dict.items(), key=lambda t: t[1] + str(t[0])))
         clone_regs = []
         cd_values = list(cd_order.values())
         cd_keys = list(cd_order.keys())
@@ -111,7 +109,7 @@ class CodeCloneFinder(dataflow_facade):
             if not 'Reg' in tv.termtype: continue
             target_tree = self.makeTree(tk)
             functable[tk, bit] = splitter.split(target_tree)
-        ft_order = collections.OrderedDict(sorted(functable.items(), key=lambda t: str(t[0])))
+        ft_order = OrderedDict(sorted(functable.items(), key=lambda t: str(t[0])))
 
         invert_regs = []
         ft_values = list(ft_order.values())

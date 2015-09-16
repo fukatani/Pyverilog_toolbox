@@ -10,11 +10,9 @@
 
 import sys
 import os
-import pyverilog
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
-import pyverilog.controlflow.controlflow_analyzer as controlflow_analyzer
 from optparse import OptionParser
 import pyverilog.utils.util as util
 import pyverilog.dataflow.bindvisitor as BindVisitor
@@ -45,7 +43,7 @@ def _createAlwaysinfo(self, node, scope):
     This function is replaced by BindVisitor._createAlwaysinfo (in bindvisitor.py) in pyverilog_toolbox.
     But this correspondence is temporary.
     """
-    sens = None
+
     senslist = []
     clock_edge = None
     clock_name = None
@@ -57,7 +55,7 @@ def _createAlwaysinfo(self, node, scope):
     for l in node.sens_list.list:
         if l.sig is None:
             continue
-        if isinstance(l.sig, pyverilog.vparser.ast.Pointer):
+        if isinstance(l.sig, Pointer):
             signame = self._get_signal_name(l.sig.var)
             bit = int(l.sig.ptr.value)
         else:
@@ -101,9 +99,9 @@ def _is_reset(self, node, sig, edge):
     This function is assigned as BindVisitor._is_reset (in bindvisitor.py) in pyverilog_toolbox.
     But this correspondence is temporary.
     """
-    if not isinstance(node.statement.statements[0], pyverilog.vparser.ast.IfStatement):
+    if not isinstance(node.statement.statements[0], IfStatement):
         return False
-    if isinstance(node.statement.statements[0].cond, pyverilog.vparser.ast.Ulnot) and edge == 'negedge':
+    if isinstance(node.statement.statements[0].cond, Ulnot) and edge == 'negedge':
         target = node.statement.statements[0].cond.children()[0]
     elif edge == 'posedge':
         target = node.statement.statements[0].cond
@@ -133,7 +131,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
          constlist, fsm_vars) = self.get_dataflow(code_file_name)
 
         VerilogControlflowAnalyzer.__init__(self, topmodule, terms, binddict,
-        resolved_terms, resolved_binddict,constlist,fsm_vars)
+        resolved_terms, resolved_binddict, constlist, fsm_vars)
         self.binds = BindLibrary(binddict, terms)
 
     def get_dataflow(self, code_file_name, topmodule='', config_file=None):
@@ -195,7 +193,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         for tv,tk,bvi,bit,term_lsb in self.binds.walk_reg_each_bit():
             if 'Rename' in tv.termtype: continue
             target_tree = self.makeTree(tk)
-            tree_list = self.binds.extract_all_dfxxx(target_tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
+            tree_list = self.binds.extract_all_dfxxx(target_tree, set([]), bit - term_lsb, DFTerminal)
             for tree, bit in tree_list:
                 if str(tree) not in self.term_ref_dict.keys():
                     self.term_ref_dict[str(tree)] = set([])
@@ -206,7 +204,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         binds = BindLibrary(self.resolved_binddict, self.resolved_terms)
         for tv,tk,bvi,bit,term_lsb in binds.walk_reg_each_bit():
             tree = self.makeTree(tk)
-            trees = binds.extract_all_dfxxx(tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
+            trees = binds.extract_all_dfxxx(tree, set([]), bit - term_lsb, DFTerminal)
             return_dict[(str(tk), bit)] = set([str(tree) for tree in trees])
         return return_dict
 

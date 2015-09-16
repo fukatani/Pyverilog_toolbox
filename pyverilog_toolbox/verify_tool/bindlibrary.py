@@ -13,8 +13,6 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
-import pyverilog
-import pyverilog.utils.util as util
 from pyverilog.dataflow.dataflow import *
 
 class BindLibrary(object):
@@ -46,7 +44,7 @@ class BindLibrary(object):
         def helper(self, target_tree, tree_list, bit, dftype):
             if dftype == DFTerminal:
                 if (target_tree,bit) not in self.cache:
-                    self.cache[(target_tree,bit)] = f(self, target_tree, set([]), bit, dftype)
+                    self.cache[(target_tree, bit)] = f(self, target_tree, set([]), bit, dftype)
                 return tree_list.union(self.cache[(target_tree, bit)])
             else:
                 return f(self, target_tree, tree_list, bit, dftype)
@@ -67,7 +65,7 @@ class BindLibrary(object):
                 target_bind, target_term_lsb = self.get_next_bind(target_scope, bit)
                 if not target_bind.isCombination():
                     tree_list.add((target_tree, bit + target_term_lsb))
-            else:#TOP Input port
+            else:  #TOP Input port
                 tree_list.add((target_tree, bit + eval_value(self._terms[self.scope_dict[str(target_tree)]].lsb)))
         else:
             if isinstance(target_tree, dftype):
@@ -86,9 +84,9 @@ class BindLibrary(object):
             else:
                 for nextnode in target_tree.nextnodes:
                     if isinstance(target_tree, DFBranch) and nextnode == target_tree.condnode:
-                        tree_list = self.extract_all_dfxxx(nextnode,tree_list, 0, dftype)
+                        tree_list = self.extract_all_dfxxx(nextnode, tree_list, 0, dftype)
                     else:
-                        tree_list = self.extract_all_dfxxx(nextnode,tree_list, bit, dftype)
+                        tree_list = self.extract_all_dfxxx(nextnode, tree_list, bit, dftype)
         elif isinstance(target_tree, DFBranch):
             tree_list = self.extract_all_dfxxx(target_tree.condnode, tree_list, 0, dftype)
             tree_list = self.extract_all_dfxxx(target_tree.truenode, tree_list, bit, dftype)
@@ -104,7 +102,6 @@ class BindLibrary(object):
             tree_list = self.extract_all_dfxxx(target_tree.var, tree_list, ref_bit, dftype)
         return tree_list
 
-
     def search_combloop(self, target_tree, bit, start_tree, start_bit, find_cnt=0, rec_call_cnt=0):
         """[FUNCTIONS]
         target_tree:DF***
@@ -116,7 +113,7 @@ class BindLibrary(object):
         if find_cnt == 2:
             raise CombLoopException('Combinational loop is found @' + str(start_tree))
 
-        rec_call_cnt += 1;
+        rec_call_cnt += 1
         if rec_call_cnt > 1000:
             raise CombLoopException(str(start_tree) + ' may be combinational loop, or too complex logic (concern over 1000 variable).')
 
@@ -151,16 +148,15 @@ class BindLibrary(object):
             self.search_combloop(target_tree.var, ref_bit, start_tree, start_bit, find_cnt, rec_call_cnt)
         return
 
-
     def delete_all_cache(self):
         self.cache = {}
         self.gnb_cache= {}
 
     def gnb_memoize(f):
-        def helper(self,y,z):
-            if (y,z) not in self.gnb_cache:
-               self.gnb_cache[(y,z)] = f(self,y,z)
-            return self.gnb_cache[(y,z)]
+        def helper(self, y, z):
+            if (y, z) not in self.gnb_cache:
+               self.gnb_cache[(y, z)] = f(self, y, z)
+            return self.gnb_cache[(y, z)]
         return helper
 
     @gnb_memoize
@@ -194,7 +190,8 @@ class BindLibrary(object):
 
 
     def get_bit_width_from_tree(self, tree):
-        onebit_comb = ('Ulnot','Unot','Eq', 'Ne','Lor','Land','Unand','Uor','Unor','Uxor','Uxnor')
+        onebit_comb = ('Ulnot', 'Unot', 'Eq', 'Ne',
+                       'Lor', 'Land', 'Unand', 'Uor', 'Unor', 'Uxor', 'Uxnor')
         if isinstance(tree, DFTerminal):
             term = self._terms[self.get_scope(tree)]
             return eval_value(term.msb)  + 1
@@ -249,12 +246,12 @@ class BindLibrary(object):
 
 class CombLoopException(Exception): pass
 
-class MothernodeSetter(BindLibrary) :
+class MothernodeSetter(BindLibrary):
     """[CLASSES]
     set mother node for all nodes.
     need expressly call destructer.
     """
-    def __init__(self, bind_library) :
+    def __init__(self, bind_library):
         self._binddict = bind_library._binddict
         self._terms = bind_library._terms
         self.scope_dict = bind_library.scope_dict

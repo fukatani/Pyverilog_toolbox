@@ -14,7 +14,6 @@ import csv
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
-import pyverilog.utils.version
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
 
@@ -32,16 +31,14 @@ class RegMapAnalyzer(dataflow_facade):
         self.reg_control = MapFactory(setup_file)
 
     def getRegMaps(self):
-
         write_map = self.reg_control.create_map('write')
         read_map = self.reg_control.create_map('read')
-        binds = self.binds
 
-        for tv,tk,bvi,bit,term_lsb in binds.walk_reg_each_bit():
+        for tv,tk,bvi,bit,term_lsb in self.binds.walk_reg_each_bit():
             target_tree = self.makeTree(tk)
             funcdict = splitter.split(target_tree)
             funcdict = splitter.remove_reset_condition(funcdict)
-            tree_list = binds.extract_all_dfxxx(target_tree, set([]), bit - term_lsb, pyverilog.dataflow.dataflow.DFTerminal)
+            tree_list = self.binds.extract_all_dfxxx(target_tree, set([]), bit - term_lsb, DFTerminal)
             write_map.check_new_reg(str(tv), term_lsb, tree_list, funcdict, bit)
             read_map.check_new_reg(str(tv), term_lsb, tree_list, funcdict, bit)
         self.out_file = open(self.out_file_name, "w")
@@ -128,6 +125,7 @@ class WriteMap(object):
             self.finger_print_signals = set([flag, address, data])
         self.map = {}
         self.this_map_name = '\nWrite Map\n'
+
     def output_csv(self, file_handle):
         file_handle.write(self.this_map_name)
         self.calc_map_spec()
@@ -172,7 +170,7 @@ class WriteMap(object):
     def get_address(self, funcdict):
         return_val = -1
         for key, verb in funcdict.items():
-            if isinstance(verb, pyverilog.dataflow.dataflow.DFPartselect):
+            if isinstance(verb, DFPartselect):
                 signal = str(verb.var)
                 map_lsb = verb.lsb.value
             else:
@@ -204,7 +202,7 @@ class ReadMap(WriteMap):
 
     def get_map_info(self, trees, funcdict, map_bit):
         def is_data_sig(sig_name, verb):
-            if isinstance(verb, pyverilog.dataflow.dataflow.DFPartselect):
+            if isinstance(verb, DFPartselect):
                 return sig_name == str(verb.var)
             elif hasattr(verb, 'nextnodes'):
                 return sig_name in str(verb.nextnodes)

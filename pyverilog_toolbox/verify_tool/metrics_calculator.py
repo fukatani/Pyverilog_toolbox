@@ -8,7 +8,6 @@
 
 import sys
 import os
-import copy
 from collections import OrderedDict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
@@ -167,7 +166,7 @@ class MetricsCalculator(dataflow_facade):
         """ [FUNCTIONS]
         Count up if/else/case branches number for register/function metrics.
         """
-        if isinstance(tree, pyverilog.dataflow.dataflow.DFBranch):
+        if isinstance(tree, DFBranch):
             count += 1
             count = self.walk_for_count_branch(tree.truenode, count)
             count = self.walk_for_count_branch(tree.falsenode, count)

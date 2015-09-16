@@ -30,7 +30,7 @@ class CntAnalyzer(dataflow_facade):
         self.make_term_ref_dict()
         self.cnt_dict = {}
 
-        for tv,tk,bvi,bit,term_lsb in self.binds.walk_reg_each_bit():
+        for tv, tk, bvi, bit, term_lsb in self.binds.walk_reg_each_bit():
             if not 'cnt' in str(tk) and not 'count' in str(tk): continue
             if not eval_value(tv.msb): continue #1bit signal is not counter.
 
@@ -48,7 +48,7 @@ class CntAnalyzer(dataflow_facade):
             new_counter.set_reset_value(self.get_reset_value(str(tk), target_tree, str(bvi.getResetName())))
 
             load_const_dict = self.filter(funcdict, self.active_load_const)
-            load_const_dict = {conds[-1] : eval_value(value) for conds, value in load_const_dict.items()}
+            load_const_dict = {conds[-1]: eval_value(value) for conds, value in load_const_dict.items()}
             new_counter.set_load_const_cond(load_const_dict)
 
             if load_const_dict:
@@ -85,7 +85,7 @@ class CntAnalyzer(dataflow_facade):
         def make_cnt_ref_info(cond_dict):
             cnt_ref_info = []
             for cond, term_value in cond_dict.items():
-                reffered_cnt_set = []
+                reffered_cnts = []
                 opes = self.binds.extract_all_dfxxx(cond, set([]), 0, DFOperator)
                 opes = set([ope[0] for ope in opes])
                 for ope in opes:
@@ -101,9 +101,9 @@ class CntAnalyzer(dataflow_facade):
                         continue
                     ope.comp_value = eval_value(ope.children()[1])
                     ope.comp_target.mother_node = ope
-                    reffered_cnt_set.append(ope.comp_target)
-                if reffered_cnt_set:
-                    cnt_ref_info.append((reffered_cnt_set, term_value, cond, lsb))
+                    reffered_cnts.append(ope.comp_target)
+                if reffered_cnts:
+                    cnt_ref_info.append((reffered_cnts, term_value, cond, lsb))
             return cnt_ref_info
 
         for cnt_name, counter in self.cnt_dict.items():
@@ -231,7 +231,7 @@ class cnt_profile(object):
         self.load_dict = {}
         for cond, value in self.load_const_cond.items():
             if value != 0 and value != self.max_load_const: continue
-            tree_list = binds.extract_all_dfxxx(cond, set([]), 0, pyverilog.dataflow.dataflow.DFOperator)
+            tree_list = binds.extract_all_dfxxx(cond, set([]), 0, DFOperator)
             tree_list = set([tree for tree in tree_list if tree[0].operator in self.load_ope])
             for tree, bit in tree_list:
                 if str(tree.nextnodes[0]) == self.name:
@@ -255,7 +255,7 @@ class cnt_profile(object):
         This counter's max value = 3'd5
         """
         for cond in self.change_dict:
-            tree_list = binds.extract_all_dfxxx(cond, set([]), 0, pyverilog.dataflow.dataflow.DFOperator)
+            tree_list = binds.extract_all_dfxxx(cond, set([]), 0, DFOperator)
             tree_list = set([tree for tree in tree_list if tree[0].operator in self.plus_ope])
             for tree, bit in tree_list:
                 if str(tree.nextnodes[0]) == self.name:
@@ -265,7 +265,7 @@ class cnt_profile(object):
                 else:
                     continue
                 if not hasattr(self, 'change_cond') or self.change_cond[1] < change_limit_num:
-                    self.change_cond = (tree.operator , change_limit_num)
+                    self.change_cond = (tree.operator, change_limit_num)
 
     def make_cnt_event_dict(self, cnt_ref_dict):
         """ [FUNCTIONS]
@@ -273,7 +273,7 @@ class cnt_profile(object):
             cnt_ref_dict[term_name] = cnt_ref_branch
             cnt_event_dict[num] = term_name + "=" + value.tocode()
         """
-        class root_ope_info(object) :
+        class root_ope_info(object):
             def __init__(self, root_ope, cond_lsb, diff_list, branch):
                 self.root_ope = root_ope
                 self.cond_lsb = cond_lsb
@@ -324,6 +324,7 @@ class cnt_profile(object):
                 "\nmother counter:" + str(tuple(self.mother_cnts)))
 
 class up_down_cnt_profile(cnt_profile):
+
     def __init__(self, name, up_cond, down_cond):
         self.name = name
         self.up_cond = up_cond
