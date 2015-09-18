@@ -8,16 +8,13 @@
 
 import sys
 import os
-import copy
-import collections
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pyverilog.utils.util import *
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
 from pyverilog_toolbox.verify_tool.bindlibrary import *
-import pyverilog.controlflow.splitter as splitter
 
 class UnreferencedFinder(dataflow_facade):
 
@@ -35,15 +32,15 @@ class UnreferencedFinder(dataflow_facade):
         search input/reg/wire which not referenced any other output/reg/wire.
         """
         signals = []
-        for tv,tk in self.binds.walk_signal():
+        for tv, tk in self.binds.walk_signal():
             #Exclude parameter and function.
             if not set(['Input', 'Reg', 'Wire']) & tv.termtype: continue
             if 'Output' in tv.termtype: continue #because referenced as output.
             signals.append(str(tk))
 
-        for tv,tk,bvi,bit,term_lsb in self.binds.walk_reg_each_bit():
+        for tv, tk, bvi, bit, term_lsb in self.binds.walk_reg_each_bit():
             target_tree = self.makeTree(tk)
-            trees = self.binds.extract_all_dfxxx(target_tree, set([]), bit - tv.lsb.eval(), pyverilog.dataflow.dataflow.DFTerminal)
+            trees = self.binds.extract_all_dfxxx(target_tree, set([]), bit - tv.lsb.eval(), DFTerminal)
             trees.add((bvi.getClockName(), bvi.getClockBit()))
             trees.add((bvi.getResetName(), bvi.getResetBit()))
             for tree, bit in trees:
@@ -58,7 +55,7 @@ class UnreferencedFinder(dataflow_facade):
     @out_as_html(decorate_html)
     def search_floating(self):
         floating_signals = []
-        for tv,tk in self.binds.walk_signal():
+        for tv, tk in self.binds.walk_signal():
             if not set(['Reg', 'Wire']) & tv.termtype: continue
             if not tk in self.binddict.keys():
                 floating_signals.append(str(tk))

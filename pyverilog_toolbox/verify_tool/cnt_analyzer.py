@@ -38,9 +38,9 @@ class CntAnalyzer(dataflow_facade):
             funcdict = splitter.split(target_tree)
             funcdict = splitter.remove_reset_condition(funcdict)
 
-            up_cond = self.filter(funcdict, self.active_ope, op = 'Plus')
+            up_cond = self.filter(funcdict, self.active_ope, op='Plus')
             up_cond = {conds[-1] for conds in up_cond.keys()}
-            down_cond = self.filter(funcdict, self.active_ope, op = 'Minus')
+            down_cond = self.filter(funcdict, self.active_ope, op='Minus')
             down_cond = {conds[-1] for conds in down_cond.keys()}
 
             new_counter = self.cnt_factory(str(tk), up_cond, down_cond)
@@ -82,7 +82,7 @@ class CntAnalyzer(dataflow_facade):
         end
         cnt_event_dict[3,'Eq)] = (reg1 <= 1'd1,)
         """
-        def make_cnt_ref_info(cond_dict):
+        def make_cnt_ref_info(cond_dict, cnt_name):
             cnt_ref_info = []
             for cond, term_value in cond_dict.items():
                 reffered_cnts = []
@@ -116,7 +116,7 @@ class CntAnalyzer(dataflow_facade):
                 funcdict = splitter.remove_reset_condition(funcdict)
                 if not funcdict: continue
                 cond_dict = {func[-1]: term_value for func, term_value in funcdict.items()}#extract last condition
-                cnt_ref_info = make_cnt_ref_info(cond_dict)
+                cnt_ref_info = make_cnt_ref_info(cond_dict, cnt_name)
                 if cnt_ref_info:
                     cnt_ref_dict[term_name] = cnt_ref_info
             counter.make_cnt_event_dict(cnt_ref_dict)

@@ -10,7 +10,7 @@ import sys
 import os
 from collections import OrderedDict
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import *
@@ -45,7 +45,7 @@ class CodeCloneFinder(dataflow_facade):
         end
         """
         code_dict = {}
-        for tv,tk,bvi,bit,term_lsb in self.binds.walk_reg_each_bit():
+        for tv, tk, bvi, bit, term_lsb in self.binds.walk_reg_each_bit():
             if not 'Reg' in tv.termtype: continue
             target_tree = self.makeTree(tk)
             code_dict[tk, bit] = target_tree.tocode()
@@ -105,7 +105,7 @@ class CodeCloneFinder(dataflow_facade):
             return True
 
         functable = {}
-        for tv,tk,bvi,bit,term_lsb in self.binds.walk_reg_each_bit():
+        for tv, tk, bvi, bit, term_lsb in self.binds.walk_reg_each_bit():
             if not 'Reg' in tv.termtype: continue
             target_tree = self.makeTree(tk)
             functable[tk, bit] = splitter.split(target_tree)
@@ -128,7 +128,8 @@ class CodeCloneFinder(dataflow_facade):
 
     def deploy_reg_info(self, regs):
         for reg in regs:
-            print(str(reg[0][0]) + '[' + str(reg[0][1]) + '] and ' + str(reg[1][0]) + '[' + str(reg[1][1]) + ']')
+            print(str(reg[0][0]) + '[' + str(reg[0][1]) + '] and ' +
+                  str(reg[1][0]) + '[' + str(reg[1][1]) + ']')
 
     def decorate_html(html_name):
         temp_html = open('temp.html', 'r')

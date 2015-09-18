@@ -49,8 +49,8 @@ class TestSequenceFunctions(unittest.TestCase):
         clones = sorted(cc_finder.search_regclone(), key = lambda t: str(t[0]))
         ordered_clones = []
         for clone in clones:
-            ordered_clones.append(str(tuple(sorted(clone, key=lambda t:str(t)))))
-        ordered_clones = sorted(ordered_clones, key=lambda t:str(t))
+            ordered_clones.append(str(tuple(sorted(clone, key=lambda t: str(t)))))
+        ordered_clones = sorted(ordered_clones, key=lambda t: str(t))
         self.assertEqual(ordered_clones,
                         ['((TOP.reg1, 0), (TOP.reg3, 0))', '((TOP.reg3, 0), (TOP.sub.reg1, 0))'])
 
@@ -61,17 +61,17 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_unreferenced(self):
         u_finder = UnreferencedFinder("unreferenced_variables.v")
-        self.assertEqual(str(sorted(u_finder.search_unreferenced(), key=lambda x:str(x))),
+        self.assertEqual(str(sorted(u_finder.search_unreferenced(), key=lambda x: str(x))),
                         "['TOP.IN2', 'TOP.reg2', 'TOP.reg3', 'TOP.sub.IN']")
 
     def test_floating(self):
         u_finder = UnreferencedFinder("floating.v")
-        self.assertEqual(str(sorted(u_finder.search_floating(), key=lambda x:str(x))),
+        self.assertEqual(str(sorted(u_finder.search_floating(), key=lambda x: str(x))),
                         "['TOP.in1', 'TOP.reg2']")
 
     def test_floating2(self):
         u_finder = UnreferencedFinder("floating2.v")
-        self.assertEqual(str(sorted(u_finder.search_floating(), key=lambda x:str(x))),
+        self.assertEqual(str(sorted(u_finder.search_floating(), key=lambda x: str(x))),
                         "['TOP.IN', 'TOP.reg1[1]', 'TOP.reg3[2]']")
 
     def test_cnt_analyzer(self):

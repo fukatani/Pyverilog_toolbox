@@ -11,7 +11,7 @@
 import sys
 import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pyverilog.dataflow.dataflow import *
 
@@ -43,7 +43,7 @@ class BindLibrary(object):
         """
         def helper(self, target_tree, tree_list, bit, dftype):
             if dftype == DFTerminal:
-                if (target_tree,bit) not in self.cache:
+                if (target_tree, bit) not in self.cache:
                     self.cache[(target_tree, bit)] = f(self, target_tree, set([]), bit, dftype)
                 return tree_list.union(self.cache[(target_tree, bit)])
             else:
@@ -180,7 +180,7 @@ class BindLibrary(object):
             if scope is not None:
                 binds = self._binddict[scope]
                 term = self._terms[scope]
-            for index,bind in enumerate(binds):
+            for index, bind in enumerate(binds):
                 if bind.lsb is None:
                     return 0
                 if self.get_bind_lsb(bind) <= bit <= self.get_bind_msb(bind):
@@ -213,7 +213,7 @@ class BindLibrary(object):
             raise IRREGAL_CODE_FORM("unexpected concat node")
 
     def walk_reg_each_bit(self):
-        for tk, tv in sorted(self._terms.items(), key=lambda x:len(x[0])):
+        for tk, tv in sorted(self._terms.items(), key=lambda x: len(x[0])):
             if tk in self._binddict.keys():
                 for bvi in self._binddict[tk]: #process for each always block
                     bind_lsb = self.get_bind_lsb(bvi)
@@ -222,7 +222,7 @@ class BindLibrary(object):
                         yield tv, tk, bvi, bit, bind_lsb
 
     def walk_signal(self):
-        for tk, tv in sorted(self._terms.items(), key=lambda x:len(x[0])):
+        for tk, tv in sorted(self._terms.items(), key=lambda x: len(x[0])):
             yield tv, tk
 
     def get_bind_lsb(self, bind):

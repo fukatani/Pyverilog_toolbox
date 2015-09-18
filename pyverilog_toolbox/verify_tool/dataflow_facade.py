@@ -11,13 +11,14 @@
 import sys
 import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from optparse import OptionParser
 import pyverilog.utils.util as util
 import pyverilog.dataflow.bindvisitor as BindVisitor
 from pyverilog.dataflow.dataflow_analyzer import VerilogDataflowAnalyzer
 from pyverilog.dataflow.optimizer import VerilogDataflowOptimizer
+from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.bindlibrary import BindLibrary
 from pyverilog.controlflow.controlflow_analyzer import VerilogControlflowAnalyzer
 
@@ -202,7 +203,7 @@ class dataflow_facade(VerilogControlflowAnalyzer):
     def make_extract_dfterm_dict(self):
         return_dict = {}
         binds = BindLibrary(self.resolved_binddict, self.resolved_terms)
-        for tv,tk,bvi,bit,term_lsb in binds.walk_reg_each_bit():
+        for tv, tk, bvi, bit, term_lsb in binds.walk_reg_each_bit():
             tree = self.makeTree(tk)
             trees = binds.extract_all_dfxxx(tree, set([]), bit - term_lsb, DFTerminal)
             return_dict[(str(tk), bit)] = set([str(tree) for tree in trees])
@@ -229,12 +230,12 @@ class dataflow_facade(VerilogControlflowAnalyzer):
         """
         terms = self.binds._terms
         print('Term:')
-        for tk, tv in sorted(terms.items(), key=lambda x:len(x[0])):
+        for tk, tv in sorted(terms.items(), key=lambda x: len(x[0])):
             print(tv.tostr())
 
         binddict = self.binds._binddict
         print('Bind:')
-        for bk, bv in sorted(binddict.items(), key=lambda x:len(x[0])):
+        for bk, bv in sorted(binddict.items(), key=lambda x: len(x[0])):
             for bvi in bv:
                 print(bvi.tostr())
 
