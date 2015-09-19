@@ -138,15 +138,15 @@ class dataflow_facade(VerilogControlflowAnalyzer):
     def get_dataflow(self, code_file_name, topmodule='', config_file=None):
         optparser = OptionParser()
         optparser.add_option("-t","--top",dest="topmodule",
-                             default="TOP",help="Top module, Default=TOP")
+                             default="TOP", help="Top module, Default=TOP")
 
-        optparser.add_option("-I","--include",dest="include",action="append",
+        optparser.add_option("-I","--include", dest="include", action="append",
                              default=[],help="Include path")
-        optparser.add_option("-D",dest="define",action="append",
-                             default=[],help="Macro Definition")
-        optparser.add_option("-S",dest="config_file",default=[],help="config_file")
-        optparser.add_option("-s","--search",dest="searchtarget",action="append",
-                             default=[],help="Search Target Signal")
+        optparser.add_option("-D",dest="define", action="append",
+                             default=[], help="Macro Definition")
+        optparser.add_option("-S", dest="config_file", default=[], help="config_file")
+        optparser.add_option("-s", "--search", dest="searchtarget", action="append",
+                             default=[], help="Search Target Signal")
 
         (options, args) = optparser.parse_args()
 
