@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # bindlibrary.py
 #
-# bindlibrary
+# library for get bind information.
 #
 #
 # Copyright (C) 2015, Ryosuke Fukatani

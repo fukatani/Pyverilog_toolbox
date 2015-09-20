@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
-# regmap_analyzer.py
+# cnt_analyzer.py
 #
-# Register map analyzer
+#
 #
 #
 # Copyright (C) 2015, Ryosuke Fukatani

@@ -1,6 +1,7 @@
 #-------------------------------------------------------------------------------
-# unreferenced_finder.py
+# metrics_calculator.py
 #
+#Calculate comde metrics for register level, function level and module level.
 #
 # Copyright (C) 2015, Ryosuke Fukatani
 # License: Apache 2.0

@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
-# regmap_analyzer.py
+# combloop_finder.py
 #
-# Register map analyzer
+# finding combinational loop in RTL design.
 #
 #
 # Copyright (C) 2015, Ryosuke Fukatani
