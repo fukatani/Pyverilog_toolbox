@@ -8,6 +8,7 @@ before_script:
   - sudo apt-get install graphviz
   - pip install pygraphviz
   - pip install pyverilog
+  - pip install sympy
 script:
   - cd pyverilog_toolbox/testcode/
   - python test_ra.py

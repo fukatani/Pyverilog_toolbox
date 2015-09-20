@@ -21,6 +21,7 @@ from pyverilog_toolbox.verify_tool.cnt_analyzer import *
 from pyverilog_toolbox.verify_tool.codeclone_finder import CodeCloneFinder
 from pyverilog_toolbox.verify_tool.unreferenced_finder import UnreferencedFinder
 from pyverilog_toolbox.verify_tool.metrics_calculator import MetricsCalculator
+from pyverilog_toolbox.verify_tool.formal_verifier import FormalVerifier
 
 class TestSequenceFunctions(unittest.TestCase):
     def setUp(self):
@@ -168,6 +169,28 @@ class TestSequenceFunctions(unittest.TestCase):
         c_finder = CombLoopFinder("combloop4.v")
         with self.assertRaises(CombLoopException):
             c_finder.search_combloop()
+
+    def test_formal_verifier(self):
+        if sys.version_info[0] == 2:
+            fv = FormalVerifier("../testcode/fv_test.v")
+            t_table = fv.calc_truth_table('TOP.G')
+            fv.write_back_DFmethods()
+            self.assertEqual(t_table["['TOP_multi__0__: False', 'TOP_multi__1__: False', 'TOP_multi__2__: False']"],
+                             False)
+            self.assertEqual(t_table["['TOP_multi__0__: False', 'TOP_multi__1__: False', 'TOP_multi__2__: True']"],
+                             False)
+            self.assertEqual(t_table["['TOP_multi__0__: False', 'TOP_multi__1__: True', 'TOP_multi__2__: False']"],
+                             False)
+            self.assertEqual(t_table["['TOP_multi__0__: False', 'TOP_multi__1__: True', 'TOP_multi__2__: True']"],
+                             False)
+            self.assertEqual(t_table["['TOP_multi__0__: True', 'TOP_multi__1__: False', 'TOP_multi__2__: False']"],
+                             False)
+            self.assertEqual(t_table["['TOP_multi__0__: True', 'TOP_multi__1__: False', 'TOP_multi__2__: True']"],
+                             False)
+            self.assertEqual(t_table["['TOP_multi__0__: True', 'TOP_multi__1__: True', 'TOP_multi__2__: False']"],
+                             True)
+            self.assertEqual(t_table["['TOP_multi__0__: True', 'TOP_multi__1__: True', 'TOP_multi__2__: True']"],
+                             True)
 
 if __name__ == '__main__':
     unittest.main()
