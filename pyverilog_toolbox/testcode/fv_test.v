@@ -1,6 +1,6 @@
 module TOP(CLK);
   input CLK;
-  reg A,B,C,D,E,F,G;
+  reg A,B,C,D,E,F,G,H;
   reg [2:0] multi;
 
   always @(posedge CLK) begin
@@ -25,6 +25,9 @@ module TOP(CLK);
   end
   always @(posedge CLK) begin
     G <= &multi[1:0];
+  end
+  always @(posedge CLK) begin
+    H <= F+G;
   end
 
 endmodule

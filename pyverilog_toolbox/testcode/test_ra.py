@@ -173,8 +173,7 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_formal_verifier(self):
         if sys.version_info[0] == 2:
             fv = FormalVerifier("../testcode/fv_test.v")
-            t_table = fv.calc_truth_table('TOP.G')
-            fv.write_back_DFmethods()
+            t_table = fv._calc_truth_table('TOP.G')
             self.assertEqual(t_table["['TOP_multi__0__: False', 'TOP_multi__1__: False', 'TOP_multi__2__: False']"],
                              False)
             self.assertEqual(t_table["['TOP_multi__0__: False', 'TOP_multi__1__: False', 'TOP_multi__2__: True']"],
@@ -191,6 +190,9 @@ class TestSequenceFunctions(unittest.TestCase):
                              True)
             self.assertEqual(t_table["['TOP_multi__0__: True', 'TOP_multi__1__: True', 'TOP_multi__2__: True']"],
                              True)
+            t_table = fv.calc_truth_table('TOP.H')
+            self.assertEqual(str(t_table["['TOP_F: False', 'TOP_G: False']"]),
+                             "TOP_F_ + TOP_G_")
 
 if __name__ == '__main__':
     unittest.main()
