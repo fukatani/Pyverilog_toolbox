@@ -53,6 +53,37 @@ class FormalVerifier(dataflow_facade):
             self.write_back_DFmethods()
         return truth_table
 
+    def _declare_symbols(self, tree_names):
+        ns = {}
+        for tree in tree_names:
+            symbol_name = tree.replace('.','_')
+            scope = self.binds.scope_dict[tree]
+            term = self.terms[scope]
+            msb = eval_value(term.msb)
+            lsb = eval_value(term.lsb)
+            if msb == lsb:
+                ns[symbol_name] = Symbol(symbol_name)
+            else:
+                for i in range(lsb, msb + 1):
+                    symbol_name_bit = term_manager().publish_new_name(symbol_name, i)
+                    ns[symbol_name_bit] = Symbol(symbol_name_bit)
+        return ns
+
+    def _declare_renamed_symbols(self, ns):
+        for signal in term_manager().renamed_signals:
+            signal = signal.replace('.','_')
+            ns[signal] = Symbol(signal)
+        return ns
+
+    def _delete_renamed_symbols(self, ns):
+        """ [FUNCTIONS]
+        For not assined constant value to tree under algebra.
+        """
+        for signal in term_manager().renamed_signals:
+            signal = signal.replace('.','_')
+            ns.pop(signal)
+        return ns
+
     def _calc_truth_table(self, var_name):
         """[FUNCTIONS]
         """
@@ -61,33 +92,14 @@ class FormalVerifier(dataflow_facade):
             if str(tk) != var_name: continue
             trees = self.binds.extract_all_dfxxx(target_tree, set([]), 0, DFTerminal)
             tree_names = [str(tree[0]) for tree in trees]
-
-            ns = {}
-            for tree in tree_names:
-                symbol_name = tree.replace('.','_')
-                scope = self.binds.scope_dict[tree]
-                term = self.terms[scope]
-                msb = eval_value(term.msb)
-                lsb = eval_value(term.lsb)
-                if msb == lsb:
-                    ns[symbol_name] = Symbol(symbol_name)
-                else:
-                    for i in range(lsb, msb + 1):
-                        symbol_name_bit = term_manager().publish_new_name(symbol_name, i)
-                        ns[symbol_name_bit] = Symbol(symbol_name_bit)
-
+            ns = self._declare_symbols(tree_names)
             term_manager().flash_renamed_signals()
-            f = self.to_sympy_expr(target_tree.tocode())
-            for signal in term_manager().renamed_signals:
-                signal = signal.replace('.','_')
-                ns[signal] = Symbol(signal)
 
-            #TODO delete renamed signals
-            expr = sympify(f, ns, convert_xor=False)
+            expr_str = self.to_sympy_expr(target_tree.tocode())
 
-            for signal in term_manager().renamed_signals:
-                signal = signal.replace('.','_')
-                ns.pop(signal)
+            ns= self._declare_renamed_symbols(ns)
+            expr = sympify(expr_str, ns, convert_xor=False)
+            ns = self._delete_renamed_symbols(ns)
 
             truth_table = {}
             for result, var_state in self.walk_truth_table(ns, expr):
