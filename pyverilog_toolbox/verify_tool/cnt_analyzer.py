@@ -14,8 +14,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pyverilog.dataflow.dataflow import *
-from pyverilog_toolbox.verify_tool.dataflow_facade import *
-from pyverilog_toolbox.verify_tool.bindlibrary import *
+from pyverilog_toolbox.verify_tool.dataflow_facade import dataflow_facade, out_as_html
+from pyverilog_toolbox.verify_tool.bindlibrary import eval_value
 
 import pyverilog.controlflow.splitter as splitter
 
@@ -45,7 +45,7 @@ class CntAnalyzer(dataflow_facade):
 
             new_counter = self.cnt_factory(str(tk), up_cond, down_cond)
             new_counter.set_msb(eval_value(tv.msb))
-            new_counter.set_reset_value(self.get_reset_value(str(tk), target_tree, str(bvi.getResetName())))
+            new_counter.set_reset_value(self.get_reset_value(target_tree, str(bvi.getResetName())))
 
             load_const_dict = self.filter(funcdict, self.active_load_const)
             load_const_dict = {conds[-1]: eval_value(value) for conds, value in load_const_dict.items()}
@@ -121,7 +121,7 @@ class CntAnalyzer(dataflow_facade):
                     cnt_ref_dict[term_name] = cnt_ref_info
             counter.make_cnt_event_dict(cnt_ref_dict)
 
-    def get_reset_value(self, cnt_name, target_tree, reset_name):
+    def get_reset_value(self, target_tree, reset_name):
         if target_tree.condnode.operator == 'Ulnot':
             reset_from_tree = str(target_tree.condnode.nextnodes[0])
         else:

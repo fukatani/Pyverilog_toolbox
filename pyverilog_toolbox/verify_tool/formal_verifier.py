@@ -11,14 +11,12 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from pyverilog.utils.util import *
 from pyverilog.dataflow.dataflow import *
-from pyverilog_toolbox.verify_tool.dataflow_facade import *
-from pyverilog_toolbox.verify_tool.bindlibrary import *
-from sympy import *
+from pyverilog_toolbox.verify_tool.dataflow_facade import dataflow_facade
+from pyverilog_toolbox.verify_tool.bindlibrary import eval_value
+from sympy import Symbol, sympify
 from types import MethodType
 
-import pyverilog.controlflow.splitter as splitter
 import pyverilog.utils.op2mark as op2mark
 
 class FormalVerifier(dataflow_facade):
@@ -47,6 +45,9 @@ class FormalVerifier(dataflow_facade):
         del DFOperator.is_algebra
 
     def calc_truth_table(self, var_name):
+        """[FUNCTIONS]
+        Wrapper for _calc_truth_table (for assuring execute write_back_DFmethods.)
+        """
         try:
             truth_table = self._calc_truth_table(var_name)
         finally:
@@ -54,66 +55,78 @@ class FormalVerifier(dataflow_facade):
         return truth_table
 
     def _declare_symbols(self, tree_names):
-        ns = {}
+        symbols = {}
         for tree in tree_names:
-            symbol_name = tree.replace('.','_')
+            symbol_name = tree.replace('.', '_')
             scope = self.binds.scope_dict[tree]
             term = self.terms[scope]
             msb = eval_value(term.msb)
             lsb = eval_value(term.lsb)
             if msb == lsb:
-                ns[symbol_name] = Symbol(symbol_name)
+                symbols[symbol_name] = Symbol(symbol_name)
             else:
                 for i in range(lsb, msb + 1):
                     symbol_name_bit = term_manager().publish_new_name(symbol_name, i)
-                    ns[symbol_name_bit] = Symbol(symbol_name_bit)
-        return ns
+                    symbols[symbol_name_bit] = Symbol(symbol_name_bit)
 
-    def _declare_renamed_symbols(self, ns):
+        symbols = self._declare_renamed_symbols(symbols)
+        return symbols
+
+    def _declare_renamed_symbols(self, symbols):
         for signal in term_manager().renamed_signals:
-            signal = signal.replace('.','_')
-            ns[signal] = Symbol(signal)
-        return ns
+            signal = signal.replace('.', '_')
+            symbols[signal] = Symbol(signal)
+        return symbols
 
-    def _delete_renamed_symbols(self, ns):
+    def _delete_renamed_symbols(self, symbols):
         """ [FUNCTIONS]
         For not assined constant value to tree under algebra.
         """
         for signal in term_manager().renamed_signals:
-            signal = signal.replace('.','_')
-            ns.pop(signal)
-        return ns
+            signal = signal.replace('.', '_')
+            symbols.pop(signal)
+        return symbols
+
+    def _make_expr(self, target_tree):
+        """ [FUNCTIONS]
+        Make expr and symbols.
+        expr: sympy expression
+        symbol: sympy variable
+        """
+        term_manager().flash_renamed_signals()
+        trees = self.binds.extract_all_dfxxx(target_tree, set([]), 0, DFTerminal)
+        tree_names = [str(tree[0]) for tree in trees]
+        expr_str = self.to_sympy_expr(target_tree.tocode())
+        symbols = self._declare_symbols(tree_names)
+        expr = sympify(expr_str, symbols, convert_xor=False)
+        symbols = self._delete_renamed_symbols(symbols)  #to not assign const value to algebra
+        return expr, symbols
 
     def _calc_truth_table(self, var_name):
         """[FUNCTIONS]
         """
         for tv, tk, bvi, bit, term_lsb in self.binds.walk_reg_each_bit():
-            target_tree = self.makeTree(tk)
             if str(tk) != var_name: continue
-            trees = self.binds.extract_all_dfxxx(target_tree, set([]), 0, DFTerminal)
-            tree_names = [str(tree[0]) for tree in trees]
-            ns = self._declare_symbols(tree_names)
-            term_manager().flash_renamed_signals()
 
-            expr_str = self.to_sympy_expr(target_tree.tocode())
-
-            ns= self._declare_renamed_symbols(ns)
-            expr = sympify(expr_str, ns, convert_xor=False)
-            ns = self._delete_renamed_symbols(ns)
+            target_tree = self.makeTree(tk)
+            msb = eval_value(tv.msb)
+            lsb = eval_value(tv.lsb)
+            #TODO case of multi bit (not algebra)
+            expr, symbols = self._make_expr(target_tree)
 
             truth_table = {}
-            for result, var_state in self.walk_truth_table(ns, expr):
+            for result, var_state in self.walk_truth_table(symbols, expr):
                 truth_table[str(var_state)] = result
                 print('result:' + str(result) + '@' + str(var_state))
         return truth_table
 
-    def walk_truth_table(self, ns, expr):
+    def walk_truth_table(self, symbols, expr):
         init_expr = expr
-        for cnt in range(0, 2 ** len(ns.keys())):
+        for cnt in range(0, 2 ** len(symbols.keys())):
             expr = init_expr
             var_state = []
-            for i, var in enumerate(sorted(ns.keys() ,key=lambda t:str(t))):
-                value = (format(cnt, 'b').zfill(len(ns.keys()))[i]) == '1'
+            for i, var in enumerate(sorted(symbols.keys(), key=lambda t: str(t))):
+                value = (format(cnt, 'b').zfill(len(symbols.keys()))[i]) == '1'
                 var_state.append(var + ': ' + str(value))
                 expr = expr.subs(var, value)
             yield expr, var_state
@@ -136,7 +149,7 @@ class FormalVerifier(dataflow_facade):
         ? : implemented
         reduction : implemented
         """
-        replace_words = (('!', '~'), ('||', '|'), ('&&', '&'), ('==','^~'),
+        replace_words = (('!', '~'), ('||', '|'), ('&&', '&'), ('==', '^~'),
                          ('!=', '^'), )
         for comb in replace_words:
             expr = expr.replace(comb[0], comb[1])
@@ -150,8 +163,8 @@ def DFBranch_tocode(self, dest='dest', always=''):
     else: ret += dest
     ret += " | "
     if self.falsenode is not None:
-         ret += '(~' + self.condnode.tocode(dest) + '&'
-         ret += self.falsenode.tocode(dest) + ')'
+        ret += '(~' + self.condnode.tocode(dest) + '&'
+        ret += self.falsenode.tocode(dest) + ')'
     else: ret += dest
     ret += ")"
     return ret
@@ -170,7 +183,7 @@ def DFOperator_is_algebra(self):
 
 def DFTerminal_tocode(self, dest='dest'):
     if term_manager().is_under_algebra:
-        return term_manager().publish_new_name(str(self)).replace('.','_')
+        return term_manager().publish_new_name(str(self)).replace('.', '_')
     else:
         return self.tocode_org()
 
@@ -205,7 +218,6 @@ class term_manager(object):
         if cls._singleton == None:
             cls._singleton = object.__new__(cls)
             cls.is_under_algebra = False
-            cls.exclude_signals = []
             cls.renamed_signals = []
         return cls._singleton
 
@@ -227,7 +239,7 @@ class term_manager(object):
             new_name = signal + '_'
         else:
             new_name = signal + '__' + str(bit) + '__'
-        while(new_name in self.scope_dict.keys()):
+        while new_name in self.scope_dict.keys():
             new_name += '_'
         if bit is None:
             self.renamed_signals.append(new_name)
@@ -236,12 +248,7 @@ class term_manager(object):
     def flash_renamed_signals(self):
         self.renamed_signals = []
 
-    def flash_exclude_signals(self):
-        self.exclude_signals = []
-
 if __name__ == '__main__':
     fv = FormalVerifier("../testcode/fv_test.v")
-    #fv.calc_truth_table('TOP.A')
-    #fv.calc_truth_table('TOP.C')
-    #fv.calc_truth_table('TOP.E')
-    fv.calc_truth_table('TOP.H')
+    fv.calc_truth_table('TOP.I')
+
