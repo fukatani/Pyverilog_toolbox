@@ -15,7 +15,7 @@ import csv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
 from pyverilog.dataflow.dataflow import *
-from pyverilog_toolbox.verify_tool.dataflow_facade import *
+from pyverilog_toolbox.verify_tool.dataflow_facade import dataflow_facade, out_as_html
 
 import pyverilog.controlflow.splitter as splitter
 
