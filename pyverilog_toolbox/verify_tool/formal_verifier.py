@@ -16,6 +16,7 @@ from pyverilog_toolbox.verify_tool.dataflow_facade import dataflow_facade
 from pyverilog_toolbox.verify_tool.bindlibrary import eval_value
 from sympy import Symbol, sympify
 from types import MethodType
+from pyverilog.utils.util import toTermname
 
 import pyverilog.utils.op2mark as op2mark
 
@@ -58,7 +59,7 @@ class FormalVerifier(dataflow_facade):
         symbols = {}
         for tree in tree_names:
             symbol_name = tree.replace('.', '_')
-            scope = self.binds.scope_dict[tree]
+            scope = toTermname(str(tree))
             term = self.terms[scope]
             msb = eval_value(term.msb)
             lsb = eval_value(term.lsb)
@@ -104,6 +105,7 @@ class FormalVerifier(dataflow_facade):
 
     def _calc_truth_table(self, var_name):
         """[FUNCTIONS]
+        Sweep variable and calculate trutu_table.
         """
         for tv, tk, bvi, bit, term_lsb in self.binds.walk_reg_each_bit():
             if str(tk) != var_name: continue
@@ -228,7 +230,7 @@ class term_manager(object):
         self.terms = terms
 
     def get_term(self, signal):
-        scope = self.scope_dict[signal]
+        scope = toTermname(signal)
         return self.terms[scope]
 
     def set_is_under_algebra(self, flag=False):

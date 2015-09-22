@@ -13,6 +13,7 @@ from collections import OrderedDict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
 
+from pyverilog.utils.util import getScope
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import dataflow_facade, out_as_html
 
