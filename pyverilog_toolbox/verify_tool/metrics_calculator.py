@@ -11,7 +11,7 @@ import sys
 import os
 from collections import OrderedDict
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pyverilog.utils.util import getScope
 from pyverilog.dataflow.dataflow import *
@@ -147,7 +147,7 @@ class MetricsCalculator(dataflow_facade):
 
     def calc_reg_metrics(self):
         reg_metrics_elements = {}
-        for tv,tk in self.binds.walk_signal():
+        for tv, tk in self.binds.walk_signal():
             if not 'Reg' in tv.termtype: continue
             branch_cnt = 0
             if not tk in self.binddict.keys(): continue #no implement reg
@@ -187,13 +187,13 @@ class MetricsCalculator(dataflow_facade):
     def calc_module_metrics(self):
         module_metrics_elements = {}
         def initialize_elements_dict():
-            for tv,tk in self.binds.walk_signal():
+            for tv, tk in self.binds.walk_signal():
                 if 'Function' in tv.termtype or 'Rename' in tv.termtype: continue
                 if not str(getScope(tk)) in module_metrics_elements.keys():
                     module_metrics_elements[str(getScope(tk))] = module_elements()
 
         initialize_elements_dict()
-        for tv,tk in self.binds.walk_signal():
+        for tv, tk in self.binds.walk_signal():
             if 'Function' in tv.termtype or 'Rename' in tv.termtype: continue
             for eachtype in tv.termtype:
                 module_metrics_elements[str(getScope(tk))].add_element(eachtype)
@@ -232,12 +232,12 @@ class metrics_profile(object):
     def __init__(self, elements_dict, disp_limit=0):
         def sort_by_metrics_score(input_dict):
             return_dict = OrderedDict()
-            for key, value in reversed(sorted(input_dict.items(), key=lambda x:x[1])):
+            for key, value in reversed(sorted(input_dict.items(), key=lambda x: x[1])):
                 return_dict[key] = value
             return return_dict
 
         self.elements_dict = elements_dict
-        metrics_dict = { key:elements.calc_metrics()  for key, elements in self.elements_dict.items()}
+        metrics_dict = {key: elements.calc_metrics()  for key, elements in self.elements_dict.items()}
         self.m_ordered = sort_by_metrics_score(metrics_dict)
         self.disp_limit = disp_limit
         self.level = 'abstract'

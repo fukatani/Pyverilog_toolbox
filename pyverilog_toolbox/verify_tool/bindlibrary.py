@@ -115,7 +115,7 @@ class BindLibrary(object):
 
         rec_call_cnt += 1
         if rec_call_cnt > 1000:
-            raise CombLoopException(str(start_tree) + ' may be combinational loop, or too complex logic (concern over 1000 variable).')
+            raise CombLoopException(str(start_tree) + ' may be combinational loop, or too complex logic (over 1000 variable).')
 
         if hasattr(target_tree, "nextnodes"):
             if isinstance(target_tree, DFConcat):
@@ -187,7 +187,6 @@ class BindLibrary(object):
                     return index
             else:
                 raise IRREGAL_CODE_FORM("unexpected bind @"+binds[0].tostr())
-
 
     def get_bit_width_from_tree(self, tree):
         onebit_comb = ('Ulnot', 'Unot', 'Eq', 'Ne',
