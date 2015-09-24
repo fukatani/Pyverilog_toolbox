@@ -12,7 +12,7 @@ import sys
 import os
 import csv
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) )
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pyverilog.dataflow.dataflow import *
 from pyverilog_toolbox.verify_tool.dataflow_facade import dataflow_facade, out_as_html
@@ -34,13 +34,13 @@ class RegMapAnalyzer(dataflow_facade):
         write_map = self.reg_control.create_map('write')
         read_map = self.reg_control.create_map('read')
 
-        for tv,tk,bvi,bit,term_lsb in self.binds.walk_reg_each_bit():
+        for tv, tk, bvi, bit, term_lsb in self.binds.walk_reg_each_bit():
             target_tree = self.makeTree(tk)
             funcdict = splitter.split(target_tree)
             funcdict = splitter.remove_reset_condition(funcdict)
-            tree_list = self.binds.extract_all_dfxxx(target_tree, set([]), bit - term_lsb, DFTerminal)
-            write_map.check_new_reg(str(tv), term_lsb, tree_list, funcdict, bit)
-            read_map.check_new_reg(str(tv), term_lsb, tree_list, funcdict, bit)
+            trees = self.binds.extract_all_dfxxx(target_tree, set([]), bit - term_lsb, DFTerminal)
+            write_map.check_new_reg(str(tv), term_lsb, trees, funcdict, bit)
+            read_map.check_new_reg(str(tv), term_lsb, trees, funcdict, bit)
         self.out_file = open(self.out_file_name, "w")
         write_map.output_csv(self.out_file)
         read_map.output_csv(self.out_file)
@@ -53,10 +53,12 @@ class RegMapAnalyzer(dataflow_facade):
     def csv2html(self, csv_file_name):
         """ [FUNCTIONS]
            Convert csv file to html.
-           Refer to http://www.ctroms.com/blog/code/python/2011/04/20/csv-to-html-table-with-python/ (by Chris Trombley)
+           Cited from
+           http://www.ctroms.com/blog/code/python/2011/04/20/csv-to-html-table-with-python/
+           (by Chris Trombley)
         """
         reader = csv.reader(open(csv_file_name))
-        htmlfile = open("log.html","w")
+        htmlfile = open('log.html', 'w')
         rownum = 0
 
         htmlfile.write('<table rules="all">')
@@ -98,15 +100,15 @@ class MapFactory(object):
                 word_list = readline.split(':')
                 if len(word_list) == 2:
                     if word_list[0] == 'WRITE_FLAG':
-                        write_flag = word_list[1].replace('\n','')
+                        write_flag = word_list[1].replace('\n', '')
                     elif word_list[0] == 'READ_FLAG':
-                        read_flag = word_list[1].replace('\n','')
+                        read_flag = word_list[1].replace('\n', '')
                     elif word_list[0] == 'ADDRESS':
-                        address = word_list[1].replace('\n','')
+                        address = word_list[1].replace('\n', '')
                     elif word_list[0] == 'READ_DATA':
-                        read_data = word_list[1].replace('\n','')
+                        read_data = word_list[1].replace('\n', '')
                     elif word_list[0] == 'WRITE_DATA':
-                        write_data = word_list[1].replace('\n','')
+                        write_data = word_list[1].replace('\n', '')
             setup_file.close()
             return write_flag, read_flag, address, write_data, read_data
 
@@ -115,6 +117,7 @@ class MapFactory(object):
             return
 
 class WriteMap(object):
+
     def __init__(self, flag, address, data):
         self.flag = flag
         self.address = address
@@ -130,12 +133,12 @@ class WriteMap(object):
         file_handle.write(self.this_map_name)
         self.calc_map_spec()
         file_handle.write('ADD,')
-        for i in range(self.max_bit - 1,-1,-1):
+        for i in range(self.max_bit - 1, -1, -1):
             file_handle.write(str(i) + ',')
-        for address, reg in sorted(self.map.items(), key=lambda x:x[0]):
+        for address, reg in sorted(self.map.items(), key=lambda x: x[0]):
             file_handle.write('\n')
             file_handle.write(str(address) + ',')
-            for i in range(self.max_bit - 1,-1,-1):
+            for i in range(self.max_bit - 1, -1, -1):
                 if i in reg.keys():
                     signal = reg[i]
                     file_handle.write(signal[0] + '[' + str(signal[1]) + ']' + ',')
