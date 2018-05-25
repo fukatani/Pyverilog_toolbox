@@ -1,19 +1,15 @@
 from setuptools import setup, find_packages
 
-import re
+import io
 import os
+import re
 
-version = '0.0.5'
+version = '0.0.6'
+
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def read(filename):
-    return open(os.path.join(os.path.dirname(__file__), filename)).read()
-
-try:
-    import pypandoc
-    read_md = lambda f: pypandoc.convert(f, 'rst')
-except ImportError:
-    print("warning: pypandoc module not found, could not convert Markdown to RST")
-    read_md = lambda f: open(f, 'r').read()
+    return io.open(os.path.join(CURRENT_DIR, filename), encoding='utf-8').read()
 
 setup(name='pyverilog_toolbox',
       version=version,
@@ -25,6 +21,6 @@ setup(name='pyverilog_toolbox',
       license="Apache License 2.0",
       packages=find_packages(),
       package_data={ 'pyverilog_toolbox' : ['testcode/*'], },
-      long_description=read_md('Readme.md'),
+      long_description=read('Readme.rst'),
 )
 
